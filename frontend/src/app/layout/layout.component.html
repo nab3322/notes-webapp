@@ -1,36 +1,24 @@
 <div class="layout-container">
   <!-- Header -->
   <app-header 
-    [user]="currentUser"
-    (menuToggle)="toggleSidebar()"
-    class="layout-header">
+    [user]="user"
+    [sidebarOpen]="sidebarOpen"
+    (menuToggle)="onSidebarToggle()"
+    (logout)="onLogout()">
   </app-header>
 
-  <!-- Main Content Area -->
+  <!-- Main Content with Sidebar -->
   <div class="layout-main">
-    <!-- Sidebar -->
     <app-sidebar 
       [isOpen]="sidebarOpen"
-      [user]="currentUser"
-      (close)="closeSidebar()"
-      class="layout-sidebar">
+      [user]="user">
     </app-sidebar>
-
-    <!-- Content -->
+    
     <main class="layout-content" [class.sidebar-open]="sidebarOpen">
-      <div class="content-wrapper">
-        <ng-content></ng-content>
-      </div>
+      <ng-content></ng-content>
     </main>
   </div>
 
   <!-- Footer -->
-  <app-footer class="layout-footer"></app-footer>
-</div>
-
-<!-- Sidebar Overlay for Mobile -->
-<div 
-  class="sidebar-overlay" 
-  [class.active]="sidebarOpen"
-  (click)="closeSidebar()">
+  <app-footer></app-footer>
 </div>

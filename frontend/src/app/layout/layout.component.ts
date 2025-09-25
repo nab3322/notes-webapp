@@ -1,7 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { Subject, takeUntil } from 'rxjs';
-import { AuthService } from '@core/services/auth.service';
-import { WebSocketService } from '@core/services/websocket.service';
+import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { User } from '@core/models/user.model';
 
 @Component({
@@ -9,35 +6,22 @@ import { User } from '@core/models/user.model';
   templateUrl: './layout.component.html',
   styleUrls: ['./layout.component.scss']
 })
-export class LayoutComponent implements OnInit, OnDestroy {
-  currentUser: User | null = null;
-  sidebarOpen = false;
+export class LayoutComponent implements OnInit {
+  @Input() user: User | null = null;
+  @Input() sidebarOpen = false;
   
-  private destroy$ = new Subject<void>();
+  @Output() sidebarToggle = new EventEmitter<void>();
+  @Output() logout = new EventEmitter<void>();
 
-  constructor(
-    private authService: AuthService,
-    private websocketService: WebSocketService
-  ) {}
+  constructor() { }
 
-  ngOnInit(): void {
-    this.authService.currentUser$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(user => {
-        this.currentUser = user;
-      });
+  ngOnInit(): void { }
+
+  onSidebarToggle(): void {
+    this.sidebarToggle.emit();
   }
 
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
-  }
-
-  toggleSidebar(): void {
-    this.sidebarOpen = !this.sidebarOpen;
-  }
-
-  closeSidebar(): void {
-    this.sidebarOpen = false;
+  onLogout(): void {
+    this.logout.emit();
   }
 }

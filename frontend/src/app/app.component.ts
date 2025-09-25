@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 import { Subject, BehaviorSubject, Observable } from 'rxjs';
-import { filter, takeUntil } from 'rxjs/operators';
+import { filter, map, takeUntil } from 'rxjs/operators';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { environment } from '../environments/environment';
 
@@ -66,7 +66,10 @@ export class AppComponent implements OnInit, OnDestroy {
     this.isMobile$ = this.breakpointObserver.observe([
       Breakpoints.Handset,
       Breakpoints.TabletPortrait
-    ]);
+    ]).pipe(
+      // Emits true if any of the breakpoints match
+      map(result => result.matches)
+    );
     
     // Mock user login per sviluppo
     this.mockLogin();
