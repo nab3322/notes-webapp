@@ -1,13 +1,37 @@
 <!doctype html>
-<html lang="en">
+<html lang="it">
 <head>
   <meta charset="utf-8">
-  <title>Frontend</title>
+  <title>Notes Sharing App</title>
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Applicazione per la condivisione e collaborazione su note testuali">
+  <meta name="theme-color" content="#1976d2">
+  
+  <!-- Favicon -->
   <link rel="icon" type="image/x-icon" href="favicon.ico">
+  
+  <!-- Material Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="manifest.json">
+  
+  <!-- iOS Safari -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Notes App">
 </head>
-<body>
+<body class="mat-typography">
   <app-root></app-root>
+  
+  <noscript>
+    <div style="text-align: center; padding: 50px; font-family: Arial, sans-serif;">
+      <h2>JavaScript è necessario</h2>
+      <p>Questa applicazione richiede JavaScript per funzionare correttamente.</p>
+      <p>Si prega di abilitare JavaScript nel browser e ricaricare la pagina.</p>
+    </div>
+  </noscript>
 </body>
 </html>

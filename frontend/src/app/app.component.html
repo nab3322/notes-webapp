@@ -1,0 +1,26 @@
+<!-- Global Loading Indicator -->
+<div class="global-loading" *ngIf="isLoading$ | async">
+  <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+</div>
+
+<!-- Main Application Layout -->
+<div class="app-container" [class.loading]="isLoading$ | async">
+  
+  <!-- Layout with Sidebar (only when logged in) -->
+  <app-layout *ngIf="isLoggedIn$ | async; else authLayout">
+    <router-outlet></router-outlet>
+  </app-layout>
+  
+  <!-- Auth Layout (login/register) -->
+  <ng-template #authLayout>
+    <div class="auth-container">
+      <router-outlet></router-outlet>
+    </div>
+  </ng-template>
+  
+</div>
+
+<!-- Global Notifications Area -->
+<div class="notifications-area">
+  <!-- Material Snackbar will appear here -->
+</div>
