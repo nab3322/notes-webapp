@@ -1,26 +1,259 @@
-<!-- Global Loading Indicator -->
-<div class="global-loading" *ngIf="isLoading$ | async">
-  <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+<!-- Global Loading Bar -->
+<div class="global-loading-bar" *ngIf="isLoading$ | async">
+  <mat-progress-bar 
+    mode="indeterminate" 
+    color="primary">
+  </mat-progress-bar>
 </div>
 
-<!-- Main Application Layout -->
-<div class="app-container" [class.loading]="isLoading$ | async">
-  
-  <!-- Layout with Sidebar (only when logged in) -->
-  <app-layout *ngIf="isLoggedIn$ | async; else authLayout">
-    <router-outlet></router-outlet>
-  </app-layout>
-  
-  <!-- Auth Layout (login/register) -->
-  <ng-template #authLayout>
-    <div class="auth-container">
-      <router-outlet></router-outlet>
+<!-- Main Application Container -->
+<div class="app-container" 
+     [class.loading]="isLoading$ | async"
+     [class.mobile]="isMobile$ | async">
+
+  <!-- Authenticated User Layout -->
+  <div class="authenticated-layout" *ngIf="isLoggedIn$ | async; else guestLayout">
+    
+    <!-- Header -->
+    <app-header 
+      class="app-header"
+      [user]="currentUser$ | async"
+      [notifications]="unreadNotifications$ | async"
+      [isMenuOpen]="sidebarOpen"
+      (menuToggle)="toggleSidebar()"
+      (profileClick)="openProfile()"
+      (notificationClick)="openNotifications()"
+      (searchQuery)="onGlobalSearch($event)"
+      (logout)="onLogout()">
+    </app-header>
+
+    <!-- Main Content Wrapper -->
+    <div class="main-wrapper">
+      
+      <!-- Sidebar Navigation -->
+      <mat-sidenav-container 
+        class="sidenav-container" 
+        [hasBackdrop]="isMobile$ | async"
+        autosize>
+        
+        <mat-sidenav 
+          #sidebar
+          class="app-sidebar"
+          [mode]="(isMobile$ | async) ? 'over' : 'side'"
+          [opened]="sidebarOpen"
+          (openedChange)="onSidebarToggle($event)">
+          
+          <app-sidebar
+            [user]="currentUser$ | async"
+            [currentRoute]="currentRoute"
+            [folderTree]="folderTree$ | async"
+            [recentNotes]="recentNotes$ | async"
+            (navigationClick)="onNavigationClick($event)"
+            (folderClick)="onFolderClick($event)"
+            (createNote)="createNewNote()"
+            (createFolder)="createNewFolder()">
+          </app-sidebar>
+          
+        </mat-sidenav>
+
+        <!-- Main Content Area -->
+        <mat-sidenav-content class="main-content">
+          
+          <!-- Breadcrumb Navigation -->
+          <nav class="breadcrumb-nav" *ngIf="breadcrumbs$ | async as breadcrumbs">
+            <mat-chip-listbox class="breadcrumb-chips">
+              <mat-chip-option 
+                *ngFor="let crumb of breadcrumbs; let last = last"
+                [disabled]="last"
+                (click)="!last && navigateTo(crumb.route)">
+                
+                <mat-icon *ngIf="crumb.icon">{{ crumb.icon }}</mat-icon>
+                {{ crumb.label }}
+                
+                <mat-icon *ngIf="!last" matChipTrailingIcon>chevron_right</mat-icon>
+              </mat-chip-option>
+            </mat-chip-listbox>
+          </nav>
+
+          <!-- Router Outlet - Main Content -->
+          <main class="content-area" 
+                role="main" 
+                [attr.aria-label]="currentPageTitle">
+            
+            <!-- Page Loading Indicator -->
+            <div class="page-loading" *ngIf="pageLoading$ | async">
+              <mat-spinner diameter="40"></mat-spinner>
+              <p>Caricamento...</p>
+            </div>
+
+            <!-- Route Content -->
+            <router-outlet></router-outlet>
+            
+          </main>
+          
+        </mat-sidenav-content>
+        
+      </mat-sidenav-container>
+      
+    </div>
+
+    <!-- Footer -->
+    <app-footer 
+      class="app-footer"
+      [version]="appVersion"
+      [user]="currentUser$ | async">
+    </app-footer>
+    
+  </div>
+
+  <!-- Guest Layout (Login/Register) -->
+  <ng-template #guestLayout>
+    <div class="guest-layout">
+      
+      <!-- Guest Header -->
+      <header class="guest-header">
+        <div class="guest-header-content">
+          <div class="app-brand">
+            <mat-icon class="brand-icon">note</mat-icon>
+            <h1 class="brand-title">{{ appName }}</h1>
+          </div>
+          
+          <div class="guest-actions">
+            <button mat-button routerLink="/auth/login" routerLinkActive="active">
+              <mat-icon>login</mat-icon>
+              Accedi
+            </button>
+            <button mat-raised-button 
+                    color="primary" 
+                    routerLink="/auth/register" 
+                    routerLinkActive="active">
+              <mat-icon>person_add</mat-icon>
+              Registrati
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- Guest Content -->
+      <main class="guest-content" role="main">
+        <router-outlet></router-outlet>
+      </main>
+
+      <!-- Guest Footer -->
+      <footer class="guest-footer">
+        <div class="guest-footer-content">
+          <p>&copy; {{ currentYear }} {{ appName }}. Progetto Università.</p>
+          <div class="guest-links">
+            <a href="#" mat-button>Privacy</a>
+            <a href="#" mat-button>Termini</a>
+            <a href="#" mat-button>Supporto</a>
+          </div>
+        </div>
+      </footer>
+      
     </div>
   </ng-template>
-  
+
 </div>
 
-<!-- Global Notifications Area -->
-<div class="notifications-area">
-  <!-- Material Snackbar will appear here -->
+<!-- Global Overlays and Dialogs -->
+<div class="overlay-container">
+  
+  <!-- Mobile Sidebar Overlay -->
+  <div class="sidebar-backdrop" 
+       *ngIf="sidebarOpen && (isMobile$ | async)"
+       (click)="closeSidebar()"
+       [@fadeInOut]>
+  </div>
+
+  <!-- Connection Status Toast -->
+  <div class="connection-status" 
+       *ngIf="connectionStatus$ | async as status"
+       [ngClass]="'status-' + status.type"
+       [@slideInOut]>
+    <mat-icon>{{ getConnectionIcon(status.type) }}</mat-icon>
+    <span>{{ status.message }}</span>
+    <button mat-icon-button 
+            *ngIf="status.type === 'error'" 
+            (click)="retryConnection()"
+            matTooltip="Riprova connessione">
+      <mat-icon>refresh</mat-icon>
+    </button>
+  </div>
+
+  <!-- Real-time Collaboration Indicators -->
+  <div class="collaboration-indicators" 
+       *ngIf="activeCollaborators$ | async as collaborators">
+    <div class="collaborator-avatar" 
+         *ngFor="let collaborator of collaborators"
+         [matTooltip]="collaborator.username + ' sta modificando'"
+         [@bounceIn]>
+      <mat-icon [style.color]="collaborator.color">account_circle</mat-icon>
+      <div class="typing-indicator" *ngIf="collaborator.isTyping"></div>
+    </div>
+  </div>
+
 </div>
+
+<!-- PWA Update Available Banner -->
+<div class="pwa-update-banner" 
+     *ngIf="updateAvailable$ | async"
+     [@slideDown]>
+  <div class="update-content">
+    <mat-icon>system_update</mat-icon>
+    <span>Nuova versione disponibile!</span>
+    <div class="update-actions">
+      <button mat-button (click)="dismissUpdate()">Più tardi</button>
+      <button mat-raised-button 
+              color="primary" 
+              (click)="updateApp()">
+        Aggiorna ora
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Offline Status Banner -->
+<div class="offline-banner" 
+     *ngIf="isOffline$ | async"
+     [@slideDown]>
+  <div class="offline-content">
+    <mat-icon>wifi_off</mat-icon>
+    <span>Sei offline. Alcune funzionalità potrebbero non essere disponibili.</span>
+  </div>
+</div>
+
+<!-- Global Fab (Floating Action Button) -->
+<button mat-fab 
+        class="global-fab"
+        color="primary"
+        *ngIf="showGlobalFab$ | async"
+        (click)="onGlobalFabClick()"
+        [matTooltip]="globalFabTooltip"
+        [@fabAnimation]>
+  <mat-icon>{{ globalFabIcon }}</mat-icon>
+</button>
+
+<!-- Accessibility Skip Links -->
+<div class="skip-links">
+  <a class="skip-link" href="#main-content">Vai al contenuto principale</a>
+  <a class="skip-link" href="#navigation">Vai alla navigazione</a>
+  <a class="skip-link" href="#search">Vai alla ricerca</a>
+</div>
+
+<!-- Screen Reader Announcements -->
+<div aria-live="polite" 
+     aria-atomic="true" 
+     class="sr-only">
+  {{ screenReaderMessage$ | async }}
+</div>
+
+<!-- Theme Toggle (if dark theme enabled) -->
+<button mat-icon-button 
+        class="theme-toggle"
+        *ngIf="darkThemeEnabled"
+        (click)="toggleTheme()"
+        [matTooltip]="(isDarkTheme$ | async) ? 'Tema chiaro' : 'Tema scuro'"
+        [@themeToggle]>
+  <mat-icon>{{ (isDarkTheme$ | async) ? 'light_mode' : 'dark_mode' }}</mat-icon>
+</button>

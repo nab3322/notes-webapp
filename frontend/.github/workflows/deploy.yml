@@ -76,9 +76,9 @@ jobs:
             cd /var/www/production
             # Add your production deployment commands here
 
-      - name: Notify deployment
+      - - name: Notify deployment
+        if: always()
         uses: slackapi/slack-github-action@v1.24.0
-        if: always() && secrets.SLACK_WEBHOOK != ''
         with:
           payload: |
             {
