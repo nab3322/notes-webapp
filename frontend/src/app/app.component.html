@@ -1,109 +1,171 @@
 <!-- Global Loading Bar -->
-<div class="global-loading-bar" *ngIf="isLoading$ | async">
-  <mat-progress-bar 
-    mode="indeterminate" 
-    color="primary">
-  </mat-progress-bar>
-</div>
+<mat-progress-bar 
+  mode="indeterminate" 
+  color="primary"
+  *ngIf="isLoading$ | async">
+</mat-progress-bar>
 
 <!-- Main Application Container -->
-<div class="app-container" 
-     [class.loading]="isLoading$ | async"
-     [class.mobile]="isMobile$ | async">
+<div class="app-container" [class.loading]="isLoading$ | async">
 
-  <!-- Authenticated User Layout -->
+  <!-- Authenticated Layout -->
   <div class="authenticated-layout" *ngIf="isLoggedIn$ | async; else guestLayout">
     
     <!-- Header -->
-    <app-header 
-      class="app-header"
-      [user]="currentUser$ | async"
-      [notifications]="unreadNotifications$ | async"
-      [isMenuOpen]="sidebarOpen"
-      (menuToggle)="toggleSidebar()"
-      (profileClick)="openProfile()"
-      (notificationClick)="openNotifications()"
-      (searchQuery)="onGlobalSearch($event)"
-      (logout)="onLogout()">
-    </app-header>
+    <mat-toolbar color="primary" class="app-header">
+      <div class="header-content">
+        <!-- Menu Button -->
+        <button mat-icon-button 
+                (click)="toggleSidebar()"
+                class="menu-button">
+          <mat-icon>menu</mat-icon>
+        </button>
 
-    <!-- Main Content Wrapper -->
-    <div class="main-wrapper">
-      
-      <!-- Sidebar Navigation -->
-      <mat-sidenav-container 
-        class="sidenav-container" 
-        [hasBackdrop]="isMobile$ | async"
-        autosize>
-        
-        <mat-sidenav 
-          #sidebar
-          class="app-sidebar"
-          [mode]="(isMobile$ | async) ? 'over' : 'side'"
-          [opened]="sidebarOpen"
-          (openedChange)="onSidebarToggle($event)">
-          
-          <app-sidebar
-            [user]="currentUser$ | async"
-            [currentRoute]="currentRoute"
-            [folderTree]="folderTree$ | async"
-            [recentNotes]="recentNotes$ | async"
-            (navigationClick)="onNavigationClick($event)"
-            (folderClick)="onFolderClick($event)"
-            (createNote)="createNewNote()"
-            (createFolder)="createNewFolder()">
-          </app-sidebar>
-          
-        </mat-sidenav>
+        <!-- App Title -->
+        <div class="app-title">
+          <mat-icon class="app-icon">note</mat-icon>
+          <h1>{{ appName }}</h1>
+        </div>
 
-        <!-- Main Content Area -->
-        <mat-sidenav-content class="main-content">
-          
-          <!-- Breadcrumb Navigation -->
-          <nav class="breadcrumb-nav" *ngIf="breadcrumbs$ | async as breadcrumbs">
-            <mat-chip-listbox class="breadcrumb-chips">
-              <mat-chip-option 
-                *ngFor="let crumb of breadcrumbs; let last = last"
-                [disabled]="last"
-                (click)="!last && navigateTo(crumb.route)">
-                
-                <mat-icon *ngIf="crumb.icon">{{ crumb.icon }}</mat-icon>
-                {{ crumb.label }}
-                
-                <mat-icon *ngIf="!last" matChipTrailingIcon>chevron_right</mat-icon>
-              </mat-chip-option>
-            </mat-chip-listbox>
-          </nav>
+        <!-- Spacer -->
+        <span class="spacer"></span>
 
-          <!-- Router Outlet - Main Content -->
-          <main class="content-area" 
-                role="main" 
-                [attr.aria-label]="currentPageTitle">
-            
-            <!-- Page Loading Indicator -->
-            <div class="page-loading" *ngIf="pageLoading$ | async">
-              <mat-spinner diameter="40"></mat-spinner>
-              <p>Caricamento...</p>
+        <!-- Header Actions -->
+        <div class="header-actions">
+          <!-- Search Button -->
+          <button mat-icon-button 
+                  matTooltip="Cerca"
+                  (click)="router.navigate(['/search'])">
+            <mat-icon>search</mat-icon>
+          </button>
+
+          <!-- Notifications -->
+          <button mat-icon-button 
+                  matTooltip="Notifiche"
+                  [matBadge]="(unreadNotifications$ | async) || 0"
+                  [matBadgeHidden]="(unreadNotifications$ | async) === 0"
+                  matBadgeColor="warn"
+                  (click)="openNotifications()">
+            <mat-icon>notifications</mat-icon>
+          </button>
+
+          <!-- User Menu -->
+          <button mat-icon-button 
+                  [matMenuTriggerFor]="userMenu"
+                  class="user-button">
+            <mat-icon>account_circle</mat-icon>
+          </button>
+          
+          <mat-menu #userMenu="matMenu">
+            <div class="user-info" mat-menu-item disabled>
+              <div class="user-details">
+                <strong>{{ (currentUser$ | async)?.username }}</strong>
+                <small>{{ (currentUser$ | async)?.email }}</small>
+              </div>
             </div>
+            <mat-divider></mat-divider>
+            <button mat-menu-item (click)="openProfile()">
+              <mat-icon>person</mat-icon>
+              <span>Profilo</span>
+            </button>
+            <button mat-menu-item (click)="router.navigate(['/settings'])">
+              <mat-icon>settings</mat-icon>
+              <span>Impostazioni</span>
+            </button>
+            <mat-divider></mat-divider>
+            <button mat-menu-item (click)="onLogout()">
+              <mat-icon>logout</mat-icon>
+              <span>Logout</span>
+            </button>
+          </mat-menu>
+        </div>
+      </div>
+    </mat-toolbar>
 
-            <!-- Route Content -->
-            <router-outlet></router-outlet>
-            
-          </main>
-          
-        </mat-sidenav-content>
-        
-      </mat-sidenav-container>
+    <!-- Main Content with Sidebar -->
+    <mat-sidenav-container class="sidenav-container">
       
-    </div>
+      <!-- Sidebar -->
+      <mat-sidenav 
+        #drawer
+        class="sidenav"
+        [mode]="(isMobile$ | async) ? 'over' : 'side'"
+        [opened]="sidebarOpen"
+        (openedChange)="onSidebarToggle($event)">
+        
+        <div class="sidenav-content">
+          <!-- Navigation Menu -->
+          <mat-nav-list>
+            <h3 matSubheader>Menu Principale</h3>
+            
+            <mat-list-item routerLink="/dashboard" routerLinkActive="active">
+              <mat-icon matListItemIcon>dashboard</mat-icon>
+              <div matListItemTitle>Dashboard</div>
+            </mat-list-item>
+            
+            <mat-list-item routerLink="/notes" routerLinkActive="active">
+              <mat-icon matListItemIcon>note</mat-icon>
+              <div matListItemTitle>Le mie Note</div>
+            </mat-list-item>
+            
+            <mat-list-item routerLink="/shared" routerLinkActive="active">
+              <mat-icon matListItemIcon>share</mat-icon>
+              <div matListItemTitle>Condivise</div>
+            </mat-list-item>
+            
+            <mat-list-item routerLink="/folders" routerLinkActive="active">
+              <mat-icon matListItemIcon>folder</mat-icon>
+              <div matListItemTitle>Cartelle</div>
+            </mat-list-item>
+            
+            <mat-divider></mat-divider>
+            
+            <mat-list-item routerLink="/search" routerLinkActive="active">
+              <mat-icon matListItemIcon>search</mat-icon>
+              <div matListItemTitle>Ricerca</div>
+            </mat-list-item>
+          </mat-nav-list>
 
-    <!-- Footer -->
-    <app-footer 
-      class="app-footer"
-      [version]="appVersion"
-      [user]="currentUser$ | async">
-    </app-footer>
-    
+          <!-- Quick Actions -->
+          <div class="quick-actions">
+            <h3 matSubheader>Azioni Rapide</h3>
+            <button mat-raised-button 
+                    color="primary" 
+                    class="full-width-btn"
+                    (click)="createNewNote()">
+              <mat-icon>add</mat-icon>
+              Nuova Nota
+            </button>
+            <button mat-stroked-button 
+                    class="full-width-btn"
+                    (click)="createNewFolder()">
+              <mat-icon>create_new_folder</mat-icon>
+              Nuova Cartella
+            </button>
+          </div>
+        </div>
+        
+      </mat-sidenav>
+
+      <!-- Main Content -->
+      <mat-sidenav-content class="main-content">
+        
+        <!-- Page Content -->
+        <div class="content-area">
+          <!-- Loading Spinner for Page Changes -->
+          <div class="page-loading" *ngIf="pageLoading$ | async">
+            <mat-spinner diameter="50"></mat-spinner>
+            <p>Caricamento pagina...</p>
+          </div>
+
+          <!-- Router Outlet -->
+          <router-outlet></router-outlet>
+        </div>
+        
+      </mat-sidenav-content>
+      
+    </mat-sidenav-container>
+
   </div>
 
   <!-- Guest Layout (Login/Register) -->
@@ -111,149 +173,51 @@
     <div class="guest-layout">
       
       <!-- Guest Header -->
-      <header class="guest-header">
+      <mat-toolbar color="primary" class="guest-header">
         <div class="guest-header-content">
           <div class="app-brand">
             <mat-icon class="brand-icon">note</mat-icon>
-            <h1 class="brand-title">{{ appName }}</h1>
+            <h1>{{ appName }}</h1>
           </div>
           
           <div class="guest-actions">
-            <button mat-button routerLink="/auth/login" routerLinkActive="active">
-              <mat-icon>login</mat-icon>
+            <button mat-button 
+                    routerLink="/auth/login" 
+                    routerLinkActive="active">
               Accedi
             </button>
             <button mat-raised-button 
-                    color="primary" 
+                    color="accent"
                     routerLink="/auth/register" 
                     routerLinkActive="active">
-              <mat-icon>person_add</mat-icon>
               Registrati
             </button>
           </div>
         </div>
-      </header>
+      </mat-toolbar>
 
       <!-- Guest Content -->
-      <main class="guest-content" role="main">
+      <div class="guest-content">
         <router-outlet></router-outlet>
-      </main>
+      </div>
 
-      <!-- Guest Footer -->
-      <footer class="guest-footer">
-        <div class="guest-footer-content">
-          <p>&copy; {{ currentYear }} {{ appName }}. Progetto Università.</p>
-          <div class="guest-links">
-            <a href="#" mat-button>Privacy</a>
-            <a href="#" mat-button>Termini</a>
-            <a href="#" mat-button>Supporto</a>
-          </div>
-        </div>
-      </footer>
-      
     </div>
   </ng-template>
 
 </div>
 
-<!-- Global Overlays and Dialogs -->
-<div class="overlay-container">
-  
-  <!-- Mobile Sidebar Overlay -->
-  <div class="sidebar-backdrop" 
-       *ngIf="sidebarOpen && (isMobile$ | async)"
-       (click)="closeSidebar()"
-       [@fadeInOut]>
-  </div>
-
-  <!-- Connection Status Toast -->
-  <div class="connection-status" 
-       *ngIf="connectionStatus$ | async as status"
-       [ngClass]="'status-' + status.type"
-       [@slideInOut]>
-    <mat-icon>{{ getConnectionIcon(status.type) }}</mat-icon>
-    <span>{{ status.message }}</span>
-    <button mat-icon-button 
-            *ngIf="status.type === 'error'" 
-            (click)="retryConnection()"
-            matTooltip="Riprova connessione">
-      <mat-icon>refresh</mat-icon>
-    </button>
-  </div>
-
-  <!-- Real-time Collaboration Indicators -->
-  <div class="collaboration-indicators" 
-       *ngIf="activeCollaborators$ | async as collaborators">
-    <div class="collaborator-avatar" 
-         *ngFor="let collaborator of collaborators"
-         [matTooltip]="collaborator.username + ' sta modificando'"
-         [@bounceIn]>
-      <mat-icon [style.color]="collaborator.color">account_circle</mat-icon>
-      <div class="typing-indicator" *ngIf="collaborator.isTyping"></div>
-    </div>
-  </div>
-
-</div>
-
-<!-- PWA Update Available Banner -->
-<div class="pwa-update-banner" 
-     *ngIf="updateAvailable$ | async"
-     [@slideDown]>
-  <div class="update-content">
-    <mat-icon>system_update</mat-icon>
-    <span>Nuova versione disponibile!</span>
-    <div class="update-actions">
-      <button mat-button (click)="dismissUpdate()">Più tardi</button>
-      <button mat-raised-button 
-              color="primary" 
-              (click)="updateApp()">
-        Aggiorna ora
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- Offline Status Banner -->
-<div class="offline-banner" 
-     *ngIf="isOffline$ | async"
-     [@slideDown]>
-  <div class="offline-content">
-    <mat-icon>wifi_off</mat-icon>
-    <span>Sei offline. Alcune funzionalità potrebbero non essere disponibili.</span>
-  </div>
-</div>
-
-<!-- Global Fab (Floating Action Button) -->
+<!-- Floating Action Button -->
 <button mat-fab 
-        class="global-fab"
         color="primary"
-        *ngIf="showGlobalFab$ | async"
+        class="global-fab"
+        *ngIf="(isLoggedIn$ | async) && (showGlobalFab$ | async)"
         (click)="onGlobalFabClick()"
-        [matTooltip]="globalFabTooltip"
-        [@fabAnimation]>
+        [matTooltip]="globalFabTooltip">
   <mat-icon>{{ globalFabIcon }}</mat-icon>
 </button>
 
-<!-- Accessibility Skip Links -->
-<div class="skip-links">
-  <a class="skip-link" href="#main-content">Vai al contenuto principale</a>
-  <a class="skip-link" href="#navigation">Vai alla navigazione</a>
-  <a class="skip-link" href="#search">Vai alla ricerca</a>
+<!-- Mobile Sidebar Backdrop -->
+<div class="sidebar-backdrop" 
+     *ngIf="sidebarOpen && (isMobile$ | async)"
+     (click)="closeSidebar()">
 </div>
-
-<!-- Screen Reader Announcements -->
-<div aria-live="polite" 
-     aria-atomic="true" 
-     class="sr-only">
-  {{ screenReaderMessage$ | async }}
-</div>
-
-<!-- Theme Toggle (if dark theme enabled) -->
-<button mat-icon-button 
-        class="theme-toggle"
-        *ngIf="darkThemeEnabled"
-        (click)="toggleTheme()"
-        [matTooltip]="(isDarkTheme$ | async) ? 'Tema chiaro' : 'Tema scuro'"
-        [@themeToggle]>
-  <mat-icon>{{ (isDarkTheme$ | async) ? 'light_mode' : 'dark_mode' }}</mat-icon>
-</button>

@@ -1,48 +1,436 @@
+// =============================================================================
+// APP COMPONENT STYLES
+// =============================================================================
+
 .app-container {
-  min-height: 100vh;
   display: flex;
   flex-direction: column;
+  height: 100vh;
   background-color: #fafafa;
   
   &.loading {
     pointer-events: none;
-    opacity: 0.7;
+    opacity: 0.8;
   }
 }
 
-.global-loading {
+// =============================================================================
+// AUTHENTICATED LAYOUT
+// =============================================================================
+
+.authenticated-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+// Header Styles
+.app-header {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  z-index: 9999;
+  z-index: 1000;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
   
-  mat-progress-bar {
-    height: 3px;
+  .header-content {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 16px;
+  }
+  
+  .menu-button {
+    margin-right: 16px;
+  }
+  
+  .app-title {
+    display: flex;
+    align-items: center;
+    
+    .app-icon {
+      margin-right: 8px;
+      font-size: 24px;
+    }
+    
+    h1 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 400;
+    }
+  }
+  
+  .spacer {
+    flex: 1 1 auto;
+  }
+  
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .user-button {
+    margin-left: 8px;
   }
 }
 
-.auth-container {
+// Sidebar Container
+.sidenav-container {
+  flex: 1;
+  margin-top: 64px; // Height of header
+  
+  .sidenav {
+    width: 280px;
+    border-right: 1px solid #e0e0e0;
+    background-color: white;
+    
+    .sidenav-content {
+      padding: 16px 0;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    mat-nav-list {
+      flex: 1;
+      
+      mat-list-item {
+        &.active {
+          background-color: rgba(63, 81, 181, 0.1);
+          color: #3f51b5;
+          
+          mat-icon {
+            color: #3f51b5;
+          }
+        }
+        
+        &:hover {
+          background-color: rgba(0,0,0,0.04);
+        }
+      }
+    }
+    
+    .quick-actions {
+      padding: 16px;
+      border-top: 1px solid #e0e0e0;
+      
+      .full-width-btn {
+        width: 100%;
+        margin-bottom: 8px;
+        justify-content: flex-start;
+        
+        mat-icon {
+          margin-right: 8px;
+        }
+        
+        &:last-child {
+          margin-bottom: 0;
+        }
+      }
+    }
+  }
+}
+
+// Main Content
+.main-content {
+  background-color: #fafafa;
+  
+  .content-area {
+    padding: 24px;
+    min-height: calc(100vh - 64px);
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  .page-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 200px;
+    
+    mat-spinner {
+      margin-bottom: 16px;
+    }
+    
+    p {
+      color: #666;
+      margin: 0;
+    }
+  }
+}
+
+// =============================================================================
+// GUEST LAYOUT
+// =============================================================================
+
+.guest-layout {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.guest-header {
+  .guest-header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 16px;
+  }
+  
+  .app-brand {
+    display: flex;
+    align-items: center;
+    
+    .brand-icon {
+      margin-right: 12px;
+      font-size: 28px;
+    }
+    
+    h1 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 300;
+    }
+  }
+  
+  .guest-actions {
+    display: flex;
+    gap: 12px;
+    
+    button.active {
+      background-color: rgba(255,255,255,0.2);
+    }
+  }
+}
+
+.guest-content {
   flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 24px;
 }
 
-.notifications-area {
+// =============================================================================
+// FLOATING ACTION BUTTON
+// =============================================================================
+
+.global-fab {
   position: fixed;
-  bottom: 0;
+  bottom: 24px;
+  right: 24px;
+  z-index: 1000;
+  
+  &:hover {
+    transform: scale(1.05);
+    transition: transform 0.2s ease;
+  }
+}
+
+// =============================================================================
+// MOBILE STYLES
+// =============================================================================
+
+.sidebar-backdrop {
+  position: fixed;
+  top: 0;
   left: 0;
   right: 0;
-  z-index: 1000;
-  pointer-events: none;
+  bottom: 0;
+  background-color: rgba(0,0,0,0.5);
+  z-index: 999;
+  
+  @media (min-width: 768px) {
+    display: none;
+  }
 }
 
-// Responsive adjustments
+// =============================================================================
+// USER MENU STYLES
+// =============================================================================
+
+.user-info {
+  padding: 16px !important;
+  
+  .user-details {
+    display: flex;
+    flex-direction: column;
+    
+    strong {
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+    
+    small {
+      color: #666;
+      font-size: 12px;
+    }
+  }
+}
+
+// =============================================================================
+// RESPONSIVE STYLES
+// =============================================================================
+
 @media (max-width: 768px) {
+  .app-header {
+    .header-content {
+      padding: 0 8px;
+    }
+    
+    .app-title h1 {
+      font-size: 18px;
+    }
+  }
+  
+  .main-content .content-area {
+    padding: 16px;
+  }
+  
+  .global-fab {
+    bottom: 16px;
+    right: 16px;
+  }
+  
+  .guest-header .guest-header-content {
+    padding: 0 8px;
+  }
+  
+  .guest-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .app-header .app-title h1 {
+    display: none; // Hide title on very small screens
+  }
+  
+  .guest-header .app-brand h1 {
+    font-size: 20px;
+  }
+}
+
+// =============================================================================
+// MATERIAL DESIGN OVERRIDES
+// =============================================================================
+
+// Toolbar height consistency
+.mat-toolbar {
+  height: 64px !important;
+  min-height: 64px !important;
+}
+
+// Sidenav improvements
+.mat-sidenav {
+  box-shadow: 3px 0 6px rgba(0,0,0,0.1);
+}
+
+// List items improvements
+.mat-list-item {
+  border-radius: 8px;
+  margin: 4px 12px;
+  
+  &.mat-list-item-with-avatar {
+    height: auto;
+    min-height: 56px;
+  }
+}
+
+// Button improvements
+.mat-fab {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+// Menu improvements
+.mat-menu-panel {
+  min-width: 200px;
+  max-width: 300px;
+}
+
+// Badge improvements
+.mat-badge {
+  .mat-badge-content {
+    font-size: 10px;
+    font-weight: 600;
+  }
+}
+
+// =============================================================================
+// LOADING STATES
+// =============================================================================
+
+.mat-progress-bar {
+  position: fixed !important;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1001;
+  height: 3px !important;
+}
+
+// =============================================================================
+// ACCESSIBILITY IMPROVEMENTS
+// =============================================================================
+
+// Focus indicators
+button:focus,
+.mat-button:focus,
+.mat-raised-button:focus,
+.mat-icon-button:focus {
+  outline: 2px solid #3f51b5;
+  outline-offset: 2px;
+}
+
+// High contrast mode support
+@media (prefers-contrast: high) {
+  .app-header {
+    border-bottom: 2px solid currentColor;
+  }
+  
+  .sidenav {
+    border-right: 2px solid currentColor;
+  }
+}
+
+// Reduced motion support
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+// =============================================================================
+// DARK THEME SUPPORT (optional)
+// =============================================================================
+
+.dark-theme {
   .app-container {
-    font-size: 14px;
+    background-color: #121212;
+    color: #ffffff;
+  }
+  
+  .sidenav {
+    background-color: #1e1e1e;
+    border-right-color: #333;
+  }
+  
+  .main-content {
+    background-color: #121212;
+  }
+  
+  .user-info .user-details small {
+    color: #aaa;
   }
 }
