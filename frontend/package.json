@@ -12,6 +12,8 @@
     "test:coverage": "ng test --code-coverage",
     "test:ci": "ng test --watch=false --browsers=ChromeHeadless",
     "lint": "ng lint",
+    "format:check": "prettier --check src/**/*.{ts,html,scss}",
+    "format": "prettier --write src/**/*.{ts,html,scss}",
     "e2e": "ng e2e",
     "analyze": "ng build --stats-json && npx webpack-bundle-analyzer dist/stats.json",
     "docker:build": "docker build -t notes-frontend .",
