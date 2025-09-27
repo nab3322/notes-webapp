@@ -9,13 +9,6 @@
     "noPropertyAccessFromIndexSignature": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
-    "noImplicitAny": true,
-    "noImplicitThis": true,
-    "strictNullChecks": true,
-    "strictFunctionTypes": true,
-    "strictBindCallApply": true,
-    "strictPropertyInitialization": true,
-    "alwaysStrict": true,
     "sourceMap": true,
     "declaration": false,
     "declarationMap": false,
@@ -31,71 +24,19 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "resolveJsonModule": true,
-    "allowJs": false,
-    "incremental": true,
-    "removeComments": true,
-    "preserveConstEnums": true,
     "lib": [
       "ES2022",
       "dom",
       "dom.iterable"
     ],
-    "types": [
-      "node",
-      "jasmine"
-    ],
-    "typeRoots": [
-      "node_modules/@types"
-    ],
     "paths": {
-      "@app/*": [
-        "src/app/*"
-      ],
-      "@core/*": [
-        "src/app/core/*"
-      ],
-      "@shared/*": [
-        "src/app/shared/*"
-      ],
-      "@features/*": [
-        "src/app/features/*"
-      ],
-      "@layout/*": [
-        "src/app/layout/*"
-      ],
-      "@assets/*": [
-        "src/assets/*"
-      ],
-      "@env/*": [
-        "src/environments/*"
-      ],
-      "@models/*": [
-        "src/app/core/models/*"
-      ],
-      "@services/*": [
-        "src/app/core/services/*"
-      ],
-      "@guards/*": [
-        "src/app/core/guards/*"
-      ],
-      "@interceptors/*": [
-        "src/app/core/interceptors/*"
-      ],
-      "@constants/*": [
-        "src/app/core/constants/*"
-      ],
-      "@utils/*": [
-        "src/app/core/utils/*"
-      ],
-      "@components/*": [
-        "src/app/shared/components/*"
-      ],
-      "@pipes/*": [
-        "src/app/shared/pipes/*"
-      ],
-      "@directives/*": [
-        "src/app/shared/directives/*"
-      ]
+      "@app/*": ["src/app/*"],
+      "@core/*": ["src/app/core/*"],
+      "@shared/*": ["src/app/shared/*"],
+      "@features/*": ["src/app/features/*"],
+      "@layout/*": ["src/app/layout/*"],
+      "@assets/*": ["src/assets/*"],
+      "@env/*": ["src/environments/*"]
     }
   },
   "angularCompilerOptions": {
@@ -103,30 +44,15 @@
     "strictInjectionParameters": true,
     "strictInputAccessModifiers": true,
     "strictTemplates": true,
-    "strictInputTypes": true,
-    "strictAttributeTypes": true,
-    "strictSafeNavigationTypes": true,
-    "strictDomLocalRefTypes": true,
-    "strictOutputEventTypes": true,
-    "strictDomEventTypes": true,
-    "strictContextGenerics": true,
-    "strictLiteralTypes": true,
-    "enableBlockSyntax": true,
-    "enableLetSyntax": true,
     "fullTemplateTypeCheck": true,
-    "preserveWhitespaces": false,
-    "disableTypeScriptVersionCheck": false
+    "preserveWhitespaces": false
   },
   "exclude": [
     "node_modules",
     "dist",
-    "coverage",
-    "e2e/**/*.ts",
-    "**/*.spec.ts",
-    "**/*.e2e-spec.ts"
+    "coverage"
   ],
   "include": [
-    "src/**/*",
-    "src/**/*.json"
+    "src/**/*"
   ]
 }
