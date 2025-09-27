@@ -7,9 +7,9 @@ import { BehaviorSubject } from 'rxjs';
 export class LoadingService {
   private loadingCount = 0;
   private loadingSubject = new BehaviorSubject<boolean>(false);
-  
-  loading$ = this.loadingSubject.asObservable();
+  public loading$ = this.loadingSubject.asObservable();
 
+  // ---- Avanzato (con contatore) ----
   show(): void {
     this.loadingCount++;
     if (this.loadingCount === 1) {
@@ -27,5 +27,11 @@ export class LoadingService {
   reset(): void {
     this.loadingCount = 0;
     this.loadingSubject.next(false);
+  }
+
+  // ---- Compatibilità con il PDF ----
+  setLoading(loading: boolean): void {
+    this.loadingCount = loading ? 1 : 0;
+    this.loadingSubject.next(loading);
   }
 }

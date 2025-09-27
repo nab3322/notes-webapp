@@ -48,12 +48,11 @@
     "@angular-eslint/template-parser": "^17.0.0",
     "@angular/cli": "^17.0.0",
     "@angular/compiler-cli": "^17.0.0",
-    "@types/jasmine": "^5.1.9",
     "@types/lodash": "^4.14.200",
-    "@types/node": "^18.19.127",
     "@types/socket.io-client": "^3.0.0",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
+    "cypress": "^15.3.0",
     "eslint": "^8.50.0",
     "jasmine-core": "~5.1.0",
     "karma": "~6.4.0",
@@ -61,7 +60,6 @@
     "karma-coverage": "~2.2.0",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
-    "protractor": "^7.0.0",
     "typescript": "~5.2.0"
   }
 }

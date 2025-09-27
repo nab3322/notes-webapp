@@ -1,3 +1,7 @@
+import { User } from './user.model';
+import { Permission } from './permission.model';
+
+// ---- Modello base compatibile ----
 export interface Note {
   id: number;
   title: string;
@@ -8,25 +12,27 @@ export interface Note {
   ownerUsername: string;
   ownerId: number;
   folderId?: number;
-  folderName?: string;
+  folderName?: string;          // aggiunto dal tuo modello
   tags: string[];
   permissions?: Permission[];
   isShared: boolean;
   canEdit: boolean;
   canDelete: boolean;
-  isCollaborating?: boolean;
+  isCollaborating?: boolean;    // dal tuo modello
   collaborators?: User[];
   lastEditBy?: string;
 }
 
+// ---- Creazione / modifica note ----
 export interface NoteRequest {
   title: string;
   content: string;
   folderId?: number;
   tags?: string[];
-  lastModified?: Date;
+  lastModified?: Date;          // dal tuo modello
 }
 
+// ---- Versioning ----
 export interface NoteVersion {
   id: number;
   noteId: number;
@@ -40,6 +46,7 @@ export interface NoteVersion {
   isCurrent?: boolean;
 }
 
+// ---- Statistiche ----
 export interface NoteStats {
   totalCharacters: number;
   wordCount: number;
@@ -49,12 +56,14 @@ export interface NoteStats {
   shares: number;
 }
 
+// ---- Diff tra versioni ----
 export interface NoteDiff {
   additions: string[];
   deletions: string[];
   modifications: string[];
 }
 
+// ---- Filtri ----
 export interface NoteFilter {
   search?: string;
   tags?: string[];
@@ -66,6 +75,7 @@ export interface NoteFilter {
   hasCollaborators?: boolean;
 }
 
+// ---- Sorting ----
 export interface NoteSortOptions {
   field: 'title' | 'createdAt' | 'modifiedAt' | 'owner' | 'collaborators';
   direction: 'asc' | 'desc';

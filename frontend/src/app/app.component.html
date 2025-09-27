@@ -35,7 +35,7 @@
           <!-- Search Button -->
           <button mat-icon-button 
                   matTooltip="Cerca"
-                  (click)="router.navigate(['/search'])">
+                  (click)="navigateTo('/search')">
             <mat-icon>search</mat-icon>
           </button>
 
@@ -59,8 +59,8 @@
           <mat-menu #userMenu="matMenu">
             <div class="user-info" mat-menu-item disabled>
               <div class="user-details">
-                <strong>{{ (currentUser$ | async)?.username }}</strong>
-                <small>{{ (currentUser$ | async)?.email }}</small>
+                <strong>{{ (currentUser$ | async)?.username || 'User' }}</strong>
+                <small>{{ (currentUser$ | async)?.email || 'user@example.com' }}</small>
               </div>
             </div>
             <mat-divider></mat-divider>
@@ -68,7 +68,7 @@
               <mat-icon>person</mat-icon>
               <span>Profilo</span>
             </button>
-            <button mat-menu-item (click)="router.navigate(['/settings'])">
+            <button mat-menu-item (click)="navigateTo('/settings')">
               <mat-icon>settings</mat-icon>
               <span>Impostazioni</span>
             </button>
@@ -98,32 +98,27 @@
           <mat-nav-list>
             <h3 matSubheader>Menu Principale</h3>
             
-            <mat-list-item routerLink="/dashboard" routerLinkActive="active">
+            <a mat-list-item routerLink="/dashboard" routerLinkActive="active">
               <mat-icon matListItemIcon>dashboard</mat-icon>
               <div matListItemTitle>Dashboard</div>
-            </mat-list-item>
+            </a>
             
-            <mat-list-item routerLink="/notes" routerLinkActive="active">
+            <a mat-list-item routerLink="/notes" routerLinkActive="active">
               <mat-icon matListItemIcon>note</mat-icon>
               <div matListItemTitle>Le mie Note</div>
-            </mat-list-item>
+            </a>
             
-            <mat-list-item routerLink="/shared" routerLinkActive="active">
-              <mat-icon matListItemIcon>share</mat-icon>
-              <div matListItemTitle>Condivise</div>
-            </mat-list-item>
-            
-            <mat-list-item routerLink="/folders" routerLinkActive="active">
+            <a mat-list-item routerLink="/folders" routerLinkActive="active">
               <mat-icon matListItemIcon>folder</mat-icon>
               <div matListItemTitle>Cartelle</div>
-            </mat-list-item>
+            </a>
             
             <mat-divider></mat-divider>
             
-            <mat-list-item routerLink="/search" routerLinkActive="active">
+            <a mat-list-item routerLink="/search" routerLinkActive="active">
               <mat-icon matListItemIcon>search</mat-icon>
               <div matListItemTitle>Ricerca</div>
-            </mat-list-item>
+            </a>
           </mat-nav-list>
 
           <!-- Quick Actions -->
@@ -149,19 +144,10 @@
 
       <!-- Main Content -->
       <mat-sidenav-content class="main-content">
-        
-        <!-- Page Content -->
+        <!-- Router Outlet -->
         <div class="content-area">
-          <!-- Loading Spinner for Page Changes -->
-          <div class="page-loading" *ngIf="pageLoading$ | async">
-            <mat-spinner diameter="50"></mat-spinner>
-            <p>Caricamento pagina...</p>
-          </div>
-
-          <!-- Router Outlet -->
           <router-outlet></router-outlet>
         </div>
-        
       </mat-sidenav-content>
       
     </mat-sidenav-container>
