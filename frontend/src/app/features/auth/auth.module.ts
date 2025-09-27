@@ -1,26 +1,23 @@
 import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { RouterModule, Routes } from '@angular/router';
+import { SharedModule } from '../../shared/shared.module';
+
+import { LoginComponent } from './login.component';
+import { RegisterComponent } from './register.component';
 
 const routes: Routes = [
-  {
-    path: '',
-    redirectTo: 'login',
-    pathMatch: 'full'
-  },
-  {
-    path: 'login',
-    loadComponent: () => import('./login.component').then(c => c.LoginComponent)
-  },
-  {
-    path: 'register',
-    loadComponent: () => import('./register.component').then(c => c.RegisterComponent)
-  }
+  { path: '', redirectTo: 'login', pathMatch: 'full' },
+  { path: 'login', component: LoginComponent },
+  { path: 'register', component: RegisterComponent }
 ];
 
 @NgModule({
+  declarations: [
+    LoginComponent,
+    RegisterComponent
+  ],
   imports: [
-    CommonModule,
+    SharedModule,
     RouterModule.forChild(routes)
   ]
 })

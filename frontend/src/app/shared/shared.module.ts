@@ -1,4 +1,4 @@
-(import { NgModule } from '@angular/core';) // Keep only the second block, starting from this line.
+import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -36,7 +36,7 @@ import { MatStepperModule } from '@angular/material/stepper';
 // Components
 import { LoadingSpinnerComponent } from './components/loading-spinner/loading-spinner.component';
 import { ConfirmDialogComponent } from './components/confirm-dialog/confirm-dialog.component';
-import { TagInputComponent } from './components/tag-input/tag-input.component';
+import { TagInputComponent } from './components/tag-input/tag-input.compontent';
 import { FolderTreeComponent } from './components/folder-tree/folder-tree.component';
 import { ConflictResolverComponent } from './components/conflict-resolver/conflict-resolver.component';
 import { EmptyStateComponent } from './components/empty-state/empty-state.component';
@@ -83,7 +83,8 @@ const MATERIAL_MODULES = [
   MatStepperModule
 ];
 
-const COMPONENTS = [
+// TODO: Add components here when they are created
+const COMPONENTS: any[] = [
   LoadingSpinnerComponent,
   ConfirmDialogComponent,
   TagInputComponent,
@@ -92,13 +93,15 @@ const COMPONENTS = [
   EmptyStateComponent
 ];
 
-const DIRECTIVES = [
+// TODO: Add directives here when they are created
+const DIRECTIVES: any[] = [
   AutoFocusDirective,
   ClickOutsideDirective,
   InfiniteScrollDirective
 ];
 
-const PIPES = [
+// TODO: Add pipes here when they are created
+const PIPES: any[] = [
   TruncatePipe,
   TimeAgoPipe,
   HighlightPipe,

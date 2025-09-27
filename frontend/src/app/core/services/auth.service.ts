@@ -29,7 +29,7 @@ export class AuthService {
   }
 
   // Authentication Methods
-  login(credentials: LoginRequest): Observable<AuthResponse> {
+  login(credentials: LoginRequest, password: any): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.API_URL}/auth/login`, credentials)
       .pipe(
         tap(response => this.handleAuthSuccess(response)),

@@ -47,7 +47,7 @@ import { Router } from '@angular/router';
       display: flex;
       justify-content: center;
       align-items: center;
-      min-height: calc(100vh - 64px);
+      min-height: 60vh;
       padding: 20px;
     }
     .register-card { max-width: 400px; width: 100%; }
