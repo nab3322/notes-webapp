@@ -1,39 +1,15 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
-import { map, tap, catchError } from 'rxjs/operators';
+import { BehaviorSubject, Observable, throwError } from 'rxjs';
+import { map, catchError, tap } from 'rxjs/operators';
 import { Router } from '@angular/router';
-
-export interface User {
-  id: string;
-  email: string;
-  name: string;
-  avatar?: string;
-  roles: string[];
-}
-
-export interface LoginRequest {
-  email: string;
-  password: string;
-}
-
-export interface LoginResponse {
-  token: string;
-  refreshToken: string;
-  user: User;
-}
-
-export interface RegisterRequest {
-  name: string;
-  email: string;
-  password: string;
-}
+import { User, AuthResponse, LoginRequest, RegisterRequest, UserRole } from '../models/user.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private readonly API_URL = '/api/auth'; // Cambia con il tuo endpoint
+  private readonly API_URL = 'http://localhost:3000/api'; // Cambia con il tuo endpoint
   private readonly TOKEN_KEY = 'auth_token';
   private readonly REFRESH_TOKEN_KEY = 'refresh_token';
   private readonly USER_KEY = 'current_user';
@@ -48,14 +24,32 @@ export class AuthService {
     private http: HttpClient,
     private router: Router
   ) {
-    this.loadStoredAuth();
+    this.initializeAuth();
   }
 
   /**
-   * Login user
+   * Inizializza l'autenticazione controllando il localStorage
    */
-  login(credentials: LoginRequest): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(`${this.API_URL}/login`, credentials)
+  private initializeAuth(): void {
+    const token = localStorage.getItem(this.TOKEN_KEY);
+    const userData = localStorage.getItem(this.USER_KEY);
+
+    if (token && userData) {
+      try {
+        const user = JSON.parse(userData);
+        this.currentUserSubject.next(user);
+        this.isAuthenticatedSubject.next(true);
+      } catch (error) {
+        this.logout().subscribe();
+      }
+    }
+  }
+
+  /**
+   * Metodo login che accetta un solo parametro LoginRequest
+   */
+  login(loginRequest: LoginRequest): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.API_URL}/auth/login`, loginRequest)
       .pipe(
         tap(response => {
           this.setAuthData(response);
@@ -68,112 +62,151 @@ export class AuthService {
   }
 
   /**
-   * Register new user
+   * Overload per supportare email e password separati (backward compatibility)
    */
-  register(userData: RegisterRequest): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(`${this.API_URL}/register`, userData)
+  loginWithCredentials(email: string, password: string): Observable<AuthResponse> {
+    const loginRequest: LoginRequest = {
+      username: email,
+      password: password
+    };
+    return this.login(loginRequest);
+  }
+
+  /**
+   * Registrazione utente
+   */
+  register(registerRequest: RegisterRequest): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.API_URL}/auth/register`, registerRequest)
       .pipe(
         tap(response => {
           this.setAuthData(response);
         }),
         catchError(error => {
-          console.error('Registration error:', error);
+          console.error('Register error:', error);
           return throwError(() => error);
         })
       );
   }
 
   /**
-   * Logout user
+   * Metodo isLoggedIn richiesto dal template
    */
-  logout(): Observable<void> {
-    return this.http.post<void>(`${this.API_URL}/logout`, {})
-      .pipe(
-        tap(() => {
-          this.clearAuthData();
-        }),
-        catchError(() => {
-          // Even if logout API fails, clear local data
-          this.clearAuthData();
-          return of(void 0);
-        })
-      );
+  isLoggedIn(): boolean {
+    return this.isAuthenticatedSubject.value;
   }
 
   /**
-   * Refresh authentication token
-   */
-  refreshToken(): Observable<LoginResponse> {
-    const refreshToken = this.getRefreshToken();
-    
-    if (!refreshToken) {
-      return throwError(() => new Error('No refresh token available'));
-    }
-
-    return this.http.post<LoginResponse>(`${this.API_URL}/refresh`, { refreshToken })
-      .pipe(
-        tap(response => {
-          this.setAuthData(response);
-        }),
-        catchError(error => {
-          console.error('Token refresh error:', error);
-          this.clearAuthData();
-          return throwError(() => error);
-        })
-      );
-  }
-
-  /**
-   * Get current user
+   * Ottiene l'utente corrente
    */
   getCurrentUser(): User | null {
     return this.currentUserSubject.value;
   }
 
   /**
-   * Check if user is authenticated
-   */
-  isAuthenticated(): boolean {
-    return this.isAuthenticatedSubject.value;
-  }
-
-  /**
-   * Get authentication token
+   * Ottiene il token di autenticazione
    */
   getToken(): string | null {
     return localStorage.getItem(this.TOKEN_KEY);
   }
 
   /**
-   * Get refresh token
+   * Ottiene il refresh token (richiesto da auth.guard.ts)
    */
   getRefreshToken(): string | null {
     return localStorage.getItem(this.REFRESH_TOKEN_KEY);
   }
 
   /**
-   * Check if user has specific role
+   * Verifica se l'utente ha uno dei ruoli richiesti
+   * Accetta sia UserRole enum che stringhe per flessibilità
    */
-  hasRole(role: string): boolean {
+  hasAnyRole(roles: (UserRole | string)[]): boolean {
     const user = this.getCurrentUser();
-    return user ? user.roles.includes(role) : false;
-  }
-
-  /**
-   * Check if user has any of the specified roles
-   */
-  hasAnyRole(roles: string[]): boolean {
-    const user = this.getCurrentUser();
-    if (!user) return false;
+    if (!user || !user.role) return false;
     
-    return roles.some(role => user.roles.includes(role));
+    // Converti tutti i ruoli in stringhe per il confronto
+    const roleStrings = roles.map(role => role.toString());
+    const userRoleString = user.role.toString();
+    
+    return roleStrings.includes(userRoleString);
   }
 
   /**
-   * Update current user data
+   * Verifica se l'utente ha un ruolo specifico
    */
-  updateUser(userData: Partial<User>): Observable<User> {
-    return this.http.patch<User>(`${this.API_URL}/profile`, userData)
+  hasRole(role: UserRole): boolean {
+    const user = this.getCurrentUser();
+    return user?.role === role;
+  }
+
+  /**
+   * Logout che restituisce Observable (richiesto da interceptor)
+   */
+  logout(): Observable<any> {
+    // Chiama API di logout se necessario
+    return this.http.post(`${this.API_URL}/auth/logout`, {}).pipe(
+      tap(() => {
+        this.clearAuthData();
+      }),
+      catchError(() => {
+        // Anche se l'API fallisce, esegui il logout locale
+        this.clearAuthData();
+        return throwError(() => new Error('Logout failed'));
+      })
+    );
+  }
+
+  /**
+   * Logout locale senza chiamata API
+   */
+  logoutLocal(): void {
+    this.clearAuthData();
+  }
+
+  /**
+   * Refresh del token
+   */
+  refreshToken(): Observable<AuthResponse> {
+    const refreshToken = this.getRefreshToken();
+    
+    if (!refreshToken) {
+      this.clearAuthData();
+      return throwError(() => new Error('No refresh token available'));
+    }
+    
+    return this.http.post<AuthResponse>(`${this.API_URL}/auth/refresh`, { refreshToken })
+      .pipe(
+        tap(response => {
+          this.setAuthData(response);
+        }),
+        catchError(error => {
+          this.clearAuthData();
+          return throwError(() => error);
+        })
+      );
+  }
+
+  /**
+   * Verifica se il token è scaduto
+   */
+  isTokenExpired(): boolean {
+    const token = this.getToken();
+    if (!token) return true;
+
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const currentTime = Math.floor(Date.now() / 1000);
+      return payload.exp < currentTime;
+    } catch {
+      return true;
+    }
+  }
+
+  /**
+   * Aggiorna il profilo utente
+   */
+  updateProfile(user: Partial<User>): Observable<User> {
+    return this.http.put<User>(`${this.API_URL}/auth/profile`, user)
       .pipe(
         tap(updatedUser => {
           this.currentUserSubject.next(updatedUser);
@@ -183,75 +216,38 @@ export class AuthService {
   }
 
   /**
-   * Change password
+   * ✅ Cambia password
    */
-  changePassword(currentPassword: string, newPassword: string): Observable<void> {
-    return this.http.patch<void>(`${this.API_URL}/change-password`, {
+  changePassword(currentPassword: string, newPassword: string): Observable<any> {
+    return this.http.post(`${this.API_URL}/auth/change-password`, {
       currentPassword,
       newPassword
     });
   }
 
   /**
-   * Request password reset
+   * Imposta i dati di autenticazione
    */
-  requestPasswordReset(email: string): Observable<void> {
-    return this.http.post<void>(`${this.API_URL}/forgot-password`, { email });
-  }
-
-  /**
-   * Reset password with token
-   */
-  resetPassword(token: string, newPassword: string): Observable<void> {
-    return this.http.post<void>(`${this.API_URL}/reset-password`, {
-      token,
-      password: newPassword
-    });
-  }
-
-  /**
-   * Set authentication data
-   */
-  private setAuthData(authData: LoginResponse): void {
-    localStorage.setItem(this.TOKEN_KEY, authData.token);
-    localStorage.setItem(this.REFRESH_TOKEN_KEY, authData.refreshToken);
-    localStorage.setItem(this.USER_KEY, JSON.stringify(authData.user));
-
-    this.currentUserSubject.next(authData.user);
+  private setAuthData(authResponse: AuthResponse): void {
+    localStorage.setItem(this.TOKEN_KEY, authResponse.token);
+    localStorage.setItem(this.USER_KEY, JSON.stringify(authResponse.user));
+    localStorage.setItem(this.REFRESH_TOKEN_KEY, authResponse.refreshToken);
+    
+    this.currentUserSubject.next(authResponse.user);
     this.isAuthenticatedSubject.next(true);
   }
 
   /**
-   * Clear authentication data
+   * Cancella i dati di autenticazione
    */
   private clearAuthData(): void {
     localStorage.removeItem(this.TOKEN_KEY);
-    localStorage.removeItem(this.REFRESH_TOKEN_KEY);
     localStorage.removeItem(this.USER_KEY);
-
+    localStorage.removeItem(this.REFRESH_TOKEN_KEY);
+    
     this.currentUserSubject.next(null);
     this.isAuthenticatedSubject.next(false);
-
-    // Redirect to login page
+    
     this.router.navigate(['/login']);
-  }
-
-  /**
-   * Load stored authentication data on service initialization
-   */
-  private loadStoredAuth(): void {
-    const token = this.getToken();
-    const userJson = localStorage.getItem(this.USER_KEY);
-
-    if (token && userJson) {
-      try {
-        const user = JSON.parse(userJson);
-        this.currentUserSubject.next(user);
-        this.isAuthenticatedSubject.next(true);
-      } catch (error) {
-        console.error('Error parsing stored user data:', error);
-        this.clearAuthData();
-      }
-    }
   }
 }

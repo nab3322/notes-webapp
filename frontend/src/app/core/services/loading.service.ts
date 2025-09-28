@@ -1,156 +1,145 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
-
-export interface LoadingState {
-  key: string;
-  message?: string;
-  progress?: number;
-  timestamp: Date;
-}
 
 @Injectable({
   providedIn: 'root'
 })
 export class LoadingService {
-  private loadingStates = new Map<string, LoadingState>();
-  private loadingSubject = new BehaviorSubject<Map<string, LoadingState>>(new Map());
-
-  public loading$ = this.loadingSubject.asObservable();
+  private loadingSubject = new BehaviorSubject<boolean>(false);
+  private loadingRequestsCount = 0;
+  private loadingOperations = new Map<string, boolean>(); // ✅ Per tracciare operazioni specifiche
 
   /**
-   * Start loading for a specific key
+   * Observable per il stato di loading
+   */
+  public loading$: Observable<boolean> = this.loadingSubject.asObservable();
+
+  constructor() {}
+
+  /**
+   * Metodo show richiesto dall'app.component.ts
+   */
+  show(): void {
+    this.loadingRequestsCount++;
+    this.updateLoadingState();
+  }
+
+  /**
+   * Metodo hide richiesto dall'app.component.ts
+   */
+  hide(): void {
+    if (this.loadingRequestsCount > 0) {
+      this.loadingRequestsCount--;
+    }
+    this.updateLoadingState();
+  }
+
+  /**
+   * Metodo start richiesto dal loading.interceptor.ts
    */
   start(key: string, message?: string): void {
-    const loadingState: LoadingState = {
-      key,
-      message,
-      timestamp: new Date()
-    };
-
-    this.loadingStates.set(key, loadingState);
-    this.emitLoadingStates();
+    this.loadingOperations.set(key, true);
+    this.updateLoadingState();
+    
+    if (message) {
+      console.log(`Loading started: ${message}`);
+    }
   }
 
   /**
-   * Stop loading for a specific key
+   * Metodo stop richiesto dal loading.interceptor.ts
    */
   stop(key: string): void {
-    this.loadingStates.delete(key);
-    this.emitLoadingStates();
+    this.loadingOperations.delete(key);
+    this.updateLoadingState();
   }
 
   /**
-   * Update loading message for a specific key
+   * Forza lo stop del loading (utile per errori)
    */
-  updateMessage(key: string, message: string): void {
-    const state = this.loadingStates.get(key);
-    if (state) {
-      state.message = message;
-      this.loadingStates.set(key, state);
-      this.emitLoadingStates();
-    }
+  forceHide(): void {
+    this.loadingRequestsCount = 0;
+    this.loadingOperations.clear();
+    this.updateLoadingState();
   }
 
   /**
-   * Update loading progress for a specific key
+   * Ottiene lo stato corrente del loading
    */
-  updateProgress(key: string, progress: number): void {
-    const state = this.loadingStates.get(key);
-    if (state) {
-      state.progress = Math.max(0, Math.min(100, progress));
-      this.loadingStates.set(key, state);
-      this.emitLoadingStates();
-    }
+  isLoading(): boolean {
+    return this.loadingSubject.value;
   }
 
   /**
-   * Check if a specific key is loading
+   * Verifica se un'operazione specifica è in loading
    */
-  isLoading(key: string): Observable<boolean> {
-    return this.loading$.pipe(
-      map(states => states.has(key))
-    );
+  isOperationLoading(key: string): boolean {
+    return this.loadingOperations.has(key);
   }
 
   /**
-   * Check if any loading is active
+   * Ottiene tutte le operazioni in loading
    */
-  isAnyLoading(): Observable<boolean> {
-    return this.loading$.pipe(
-      map(states => states.size > 0)
-    );
+  getLoadingOperations(): string[] {
+    return Array.from(this.loadingOperations.keys());
   }
 
   /**
-   * Get loading state for a specific key
+   * Mostra loading per una Promise specifica
    */
-  getLoadingState(key: string): Observable<LoadingState | null> {
-    return this.loading$.pipe(
-      map(states => states.get(key) || null)
-    );
+  showForPromise<T>(promise: Promise<T>, key?: string): Promise<T> {
+    const loadingKey = key || `promise_${Date.now()}`;
+    this.start(loadingKey);
+    
+    return promise.finally(() => this.stop(loadingKey));
   }
 
   /**
-   * Get all loading states
+   * Mostra loading per un Observable specifico
    */
-  getAllLoadingStates(): Observable<LoadingState[]> {
-    return this.loading$.pipe(
-      map(states => Array.from(states.values()))
-    );
+  showForObservable<T>(observable: Observable<T>, key?: string): Observable<T> {
+    const loadingKey = key || `observable_${Date.now()}`;
+    this.start(loadingKey);
+    
+    return new Observable(subscriber => {
+      const subscription = observable.subscribe({
+        next: value => subscriber.next(value),
+        error: error => {
+          this.stop(loadingKey);
+          subscriber.error(error);
+        },
+        complete: () => {
+          this.stop(loadingKey);
+          subscriber.complete();
+        }
+      });
+
+      return () => {
+        subscription.unsubscribe();
+        this.stop(loadingKey);
+      };
+    });
   }
 
   /**
-   * Clear all loading states
+   * Metodo per operazioni HTTP con timeout
    */
-  clearAll(): void {
-    this.loadingStates.clear();
-    this.emitLoadingStates();
-  }
-
-  /**
-   * Start loading with auto-stop after timeout
-   */
-  startWithTimeout(key: string, message?: string, timeout: number = 30000): void {
-    this.start(key, message);
+  startWithTimeout(key: string, timeoutMs: number = 30000): void {
+    this.start(key);
     
     setTimeout(() => {
-      this.stop(key);
-    }, timeout);
+      if (this.isOperationLoading(key)) {
+        console.warn(`Loading operation '${key}' timed out after ${timeoutMs}ms`);
+        this.stop(key);
+      }
+    }, timeoutMs);
   }
 
   /**
-   * Wrap an observable with loading state
+   * Aggiorna lo stato del loading
    */
-  wrapObservable<T>(key: string, message?: string) {
-    return (source: Observable<T>) => {
-      return new Observable<T>(observer => {
-        this.start(key, message);
-        
-        const subscription = source.subscribe({
-          next: value => observer.next(value),
-          error: error => {
-            this.stop(key);
-            observer.error(error);
-          },
-          complete: () => {
-            this.stop(key);
-            observer.complete();
-          }
-        });
-
-        return () => {
-          this.stop(key);
-          subscription.unsubscribe();
-        };
-      });
-    };
-  }
-
-  /**
-   * Emit current loading states
-   */
-  private emitLoadingStates(): void {
-    this.loadingSubject.next(new Map(this.loadingStates));
+  private updateLoadingState(): void {
+    const isLoading = this.loadingRequestsCount > 0 || this.loadingOperations.size > 0;
+    this.loadingSubject.next(isLoading);
   }
 }

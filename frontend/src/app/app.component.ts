@@ -5,6 +5,7 @@ import { filter, map, takeUntil } from 'rxjs/operators';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { AuthService } from './core/services/auth.service';
 import { LoadingService } from './core/services/loading.service';
+import { User } from './core/models/user.model';
 
 @Component({
   selector: 'app-root',
@@ -17,20 +18,23 @@ export class AppComponent implements OnInit, OnDestroy {
   currentYear = new Date().getFullYear();
   
   // UI State
-  sidebarOpen = false;
+  sidebarOpen = true;
   currentRoute = '';
   currentPageTitle = 'Dashboard';
   
   // Mobile Detection
   isMobile$: Observable<boolean>;
   
-  // Mock data per sviluppo (sostituirai con servizi reali)
+  // Mock data per sviluppo
   unreadNotifications$ = new BehaviorSubject<number>(3);
   showGlobalFab$ = new BehaviorSubject<boolean>(true);
   
   // FAB Configuration
   globalFabIcon = 'add';
   globalFabTooltip = 'Crea nuova nota';
+  
+  // Authentication state controller
+  private isAuthenticatedSubject = new BehaviorSubject<boolean>(false);
   
   private destroy$ = new Subject<void>();
 
@@ -49,19 +53,25 @@ export class AppComponent implements OnInit, OnDestroy {
     );
   }
 
-  // Getters per mantenere compatibilità con template
+  // Getters per il template
   get isLoading$() {
     return this.loadingService.loading$;
   }
   
   get isLoggedIn$() {
-    return this.authService.currentUser$.pipe(
-      map(user => !!user)
-    );
+    return this.isAuthenticatedSubject.asObservable();
   }
 
   get currentUser$() {
-    return this.authService.currentUser$;
+    // Mock user per sviluppo
+    return new BehaviorSubject<User>({
+      id: '1',
+      username: 'mario.rossi',
+      email: 'mario.rossi@example.com',
+      name: 'Mario Rossi',
+      createdAt: new Date(),
+      isOnline: true
+    }).asObservable();
   }
 
   ngOnInit(): void {
@@ -77,14 +87,8 @@ export class AppComponent implements OnInit, OnDestroy {
   private initializeApp(): void {
     this.loadingService.show();
     
-    // Simula inizializzazione app
     setTimeout(() => {
       this.loadingService.hide();
-      
-      // Redirect se non autenticato
-      if (!this.authService.isLoggedIn()) {
-        this.router.navigate(['/auth/login']);
-      }
     }, 1000);
   }
 
@@ -108,48 +112,107 @@ export class AppComponent implements OnInit, OnDestroy {
       });
   }
 
-  // Navigation Methods
+  // Helper methods
+  getUserDisplayName(user: User | null): string {
+    if (!user) return 'Utente';
+    
+    if (user.name && user.name.trim()) {
+      return user.name.trim();
+    }
+    
+    if (user.firstName || user.lastName) {
+      const fullName = [user.firstName, user.lastName]
+        .filter(name => name && name.trim())
+        .join(' ');
+      if (fullName) return fullName;
+    }
+    
+    if (user.username && user.username.trim()) {
+      return user.username.trim();
+    }
+    
+    if (user.email && user.email.trim()) {
+      return user.email.split('@')[0];
+    }
+    
+    return 'Utente';
+  }
+
+  // Navigation methods
+  navigateTo(route: string): void {
+    console.log('Navigating to:', route);
+    this.router.navigate([route]);
+  }
+
   toggleSidebar(): void {
     this.sidebarOpen = !this.sidebarOpen;
+    console.log('Sidebar toggled:', this.sidebarOpen);
   }
 
   onSidebarToggle(opened: boolean): void {
     this.sidebarOpen = opened;
+    console.log('Sidebar changed:', opened);
   }
 
   closeSidebar(): void {
     this.sidebarOpen = false;
+    console.log('Sidebar closed');
   }
 
-  // Event Handlers
-  onLogout(): void {
-    this.authService.logout();
-    this.router.navigate(['/auth/login']);
+  // Header action methods
+  openNotifications(): void {
+    console.log('Notifications clicked');
+    this.router.navigate(['/notifications']);
   }
 
   openProfile(): void {
-    this.router.navigate(['/settings/profile']);
+    console.log('Profile clicked');
+    this.router.navigate(['/profile']);
   }
 
-  openNotifications(): void {
-    console.log('Notifications clicked');
-    // Implementare panel notifiche
+  onLogout(): void {
+    console.log('Logout clicked');
+    
+    if (confirm('Sei sicuro di voler effettuare il logout?')) {
+      console.log('User logged out');
+      this.isAuthenticatedSubject.next(false);
+      this.router.navigate(['/auth/login']);
+    }
   }
 
+  // Quick action methods
   createNewNote(): void {
+    console.log('Create new note clicked');
     this.router.navigate(['/notes/new']);
+    
+    this.isMobile$.pipe(takeUntil(this.destroy$)).subscribe(isMobile => {
+      if (isMobile) {
+        this.sidebarOpen = false;
+      }
+    });
   }
 
   createNewFolder(): void {
-    console.log('Create new folder');
-    // Implementare dialog per creazione cartella
+    console.log('Create new folder clicked');
+    
+    const folderName = prompt('Nome della nuova cartella:');
+    if (folderName && folderName.trim()) {
+      console.log('Creating folder:', folderName.trim());
+    }
+    
+    this.isMobile$.pipe(takeUntil(this.destroy$)).subscribe(isMobile => {
+      if (isMobile) {
+        this.sidebarOpen = false;
+      }
+    });
   }
 
   onGlobalFabClick(): void {
+    console.log('Global FAB clicked');
     this.createNewNote();
   }
 
-  // Utility Methods
+  // Utility methods
   private updatePageTitle(): void {
     const routeSegments = this.currentRoute.split('/').filter(s => s);
     if (routeSegments.length > 0) {
@@ -160,12 +223,18 @@ export class AppComponent implements OnInit, OnDestroy {
     }
   }
 
-  // Navigation helpers per template
-  navigateTo(route: string): void {
-    this.router.navigate([route]);
-  }
-
   isActiveRoute(route: string): boolean {
     return this.currentRoute.includes(route);
+  }
+
+  // Layout switching methods for testing
+  switchToAuthenticatedMode(): void {
+    console.log('Switching to authenticated mode');
+    this.isAuthenticatedSubject.next(true);
+  }
+
+  switchToGuestMode(): void {
+    console.log('Switching to guest mode');
+    this.isAuthenticatedSubject.next(false);
   }
 }

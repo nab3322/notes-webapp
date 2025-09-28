@@ -2,7 +2,8 @@
 <mat-progress-bar 
   mode="indeterminate" 
   color="primary"
-  *ngIf="isLoading$ | async">
+  *ngIf="isLoading$ | async"
+  class="loading-bar">
 </mat-progress-bar>
 
 <!-- Main Application Container -->
@@ -17,12 +18,13 @@
         <!-- Menu Button -->
         <button mat-icon-button 
                 (click)="toggleSidebar()"
-                class="menu-button">
+                class="menu-button"
+                matTooltip="Menu">
           <mat-icon>menu</mat-icon>
         </button>
 
         <!-- App Title -->
-        <div class="app-title">
+        <div class="app-title" (click)="navigateTo('/dashboard')">
           <mat-icon class="app-icon">note</mat-icon>
           <h1>{{ appName }}</h1>
         </div>
@@ -52,14 +54,15 @@
           <!-- User Menu -->
           <button mat-icon-button 
                   [matMenuTriggerFor]="userMenu"
-                  class="user-button">
+                  class="user-button"
+                  matTooltip="Menu utente">
             <mat-icon>account_circle</mat-icon>
           </button>
           
           <mat-menu #userMenu="matMenu">
             <div class="user-info" mat-menu-item disabled>
               <div class="user-details">
-                <strong>{{ (currentUser$ | async)?.username || 'User' }}</strong>
+                <strong>{{ getUserDisplayName((currentUser$ | async)) }}</strong>
                 <small>{{ (currentUser$ | async)?.email || 'user@example.com' }}</small>
               </div>
             </div>
@@ -73,6 +76,10 @@
               <span>Impostazioni</span>
             </button>
             <mat-divider></mat-divider>
+            <button mat-menu-item (click)="switchToGuestMode()">
+              <mat-icon>exit_to_app</mat-icon>
+              <span>Torna al Guest</span>
+            </button>
             <button mat-menu-item (click)="onLogout()">
               <mat-icon>logout</mat-icon>
               <span>Logout</span>
@@ -90,7 +97,7 @@
         #drawer
         class="sidenav"
         [mode]="(isMobile$ | async) ? 'over' : 'side'"
-        [opened]="sidebarOpen"
+        [opened]="sidebarOpen && !(isMobile$ | async)"
         (openedChange)="onSidebarToggle($event)">
         
         <div class="sidenav-content">
@@ -98,24 +105,24 @@
           <mat-nav-list>
             <h3 matSubheader>Menu Principale</h3>
             
-            <a mat-list-item routerLink="/dashboard" routerLinkActive="active">
+            <a mat-list-item (click)="navigateTo('/dashboard')" [class.active]="isActiveRoute('/dashboard')">
               <mat-icon matListItemIcon>dashboard</mat-icon>
               <div matListItemTitle>Dashboard</div>
             </a>
             
-            <a mat-list-item routerLink="/notes" routerLinkActive="active">
+            <a mat-list-item (click)="navigateTo('/notes')" [class.active]="isActiveRoute('/notes')">
               <mat-icon matListItemIcon>note</mat-icon>
               <div matListItemTitle>Le mie Note</div>
             </a>
             
-            <a mat-list-item routerLink="/folders" routerLinkActive="active">
+            <a mat-list-item (click)="navigateTo('/folders')" [class.active]="isActiveRoute('/folders')">
               <mat-icon matListItemIcon>folder</mat-icon>
               <div matListItemTitle>Cartelle</div>
             </a>
             
             <mat-divider></mat-divider>
             
-            <a mat-list-item routerLink="/search" routerLinkActive="active">
+            <a mat-list-item (click)="navigateTo('/search')" [class.active]="isActiveRoute('/search')">
               <mat-icon matListItemIcon>search</mat-icon>
               <div matListItemTitle>Ricerca</div>
             </a>
@@ -144,7 +151,6 @@
 
       <!-- Main Content -->
       <mat-sidenav-content class="main-content">
-        <!-- Router Outlet -->
         <div class="content-area">
           <router-outlet></router-outlet>
         </div>
@@ -168,14 +174,14 @@
           
           <div class="guest-actions">
             <button mat-button 
-                    routerLink="/auth/login" 
-                    routerLinkActive="active">
+                    (click)="navigateTo('/auth/login')"
+                    [class.active]="isActiveRoute('/auth/login')">
               Accedi
             </button>
             <button mat-raised-button 
                     color="accent"
-                    routerLink="/auth/register" 
-                    routerLinkActive="active">
+                    (click)="navigateTo('/auth/register')"
+                    [class.active]="isActiveRoute('/auth/register')">
               Registrati
             </button>
           </div>
@@ -184,6 +190,35 @@
 
       <!-- Guest Content -->
       <div class="guest-content">
+        <!-- Welcome Card -->
+        <div class="welcome-card">
+          <h2>Benvenuto in Notes App</h2>
+          <p>Crea, organizza e condividi le tue note in modo semplice e sicuro. Collabora con altri e mantieni tutto sincronizzato.</p>
+          
+          <div class="cta-buttons">
+            <button mat-raised-button 
+                    class="primary"
+                    (click)="navigateTo('/auth/register')">
+              Inizia Gratis
+            </button>
+            <button mat-stroked-button 
+                    class="secondary"
+                    (click)="navigateTo('/auth/login')">
+              Hai già un account?
+            </button>
+          </div>
+          
+          <!-- Testing Controls -->
+          <div class="test-controls">
+            <p>Demo per sviluppo:</p>
+            <button mat-button 
+                    class="test-btn"
+                    (click)="switchToAuthenticatedMode()">
+              Testa Layout Autenticato
+            </button>
+          </div>
+        </div>
+        
         <router-outlet></router-outlet>
       </div>
 

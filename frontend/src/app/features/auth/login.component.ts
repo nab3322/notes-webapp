@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
+import { LoginRequest } from '@app/core/models';
 
 /**
  * Componente di Login minimale.
@@ -37,6 +38,7 @@ export class LoginComponent {
   loginForm: FormGroup;
   loading = false;
   hidePassword = true;
+  errorMessage: string | undefined;
 
   constructor(
     private fb: FormBuilder,
@@ -50,19 +52,25 @@ export class LoginComponent {
   }
 
   onSubmit(): void {
-    if (this.loginForm.valid) {
-      this.loading = true;
-      const { email, password } = this.loginForm.value;
-      
-      this.authService.login(email, password).subscribe({
-        next: () => {
-          this.router.navigate(['/dashboard']);
-        },
-        error: (err) => {
-          console.error("Login fallito:", err);
-          this.loading = false;
-        }
-      });
-    }
+  if (this.loginForm.valid) {
+    const { email, password } = this.loginForm.value;
+    
+    const loginRequest: LoginRequest = {
+      username: email,
+      password: password,
+      rememberMe: this.loginForm.value.rememberMe || false
+    };
+
+    this.authService.login(loginRequest).subscribe({
+      next: (response) => {
+        console.log('Login successful', response);
+        this.router.navigate(['/dashboard']);
+      },
+      error: (error) => {
+        console.error('Login failed', error);
+        this.errorMessage = 'Login failed. Please check your credentials.';
+      }
+    });
+  }
   }
 }

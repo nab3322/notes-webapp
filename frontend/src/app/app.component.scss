@@ -1,438 +1,732 @@
-/* =============================================================================
-   BASE APP STRUCTURE (Struttura semplice che funziona)
-   ============================================================================= */
+// =============================================================================
+// MODERN CLEAN APP STYLES
+// =============================================================================
 
-.app-container {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  background-color: #fafafa;
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+// Variables
+:root {
+  --primary-color: #2563eb;
+  --primary-dark: #1d4ed8;
+  --secondary-color: #64748b;
+  --accent-color: #06b6d4;
+  --success-color: #10b981;
+  --warning-color: #f59e0b;
+  --error-color: #ef4444;
+  
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --bg-tertiary: #f1f5f9;
+  
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --text-muted: #94a3b8;
+  
+  --border-color: #e2e8f0;
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+  
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
 }
 
-.app-container.loading {
-  pointer-events: none;
-  opacity: 0.8;
+* {
+  box-sizing: border-box;
 }
 
-/* =============================================================================
-   HEADER STYLES (Migliorato ma mantenendo semplicità)
-   ============================================================================= */
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  margin: 0;
+  padding: 0;
+  line-height: 1.6;
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+}
 
-.app-header {
-  background: #1976d2;
-  color: white;
-  padding: 1rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+// =============================================================================
+// GLOBAL LOADING
+// =============================================================================
+
+.loading-bar {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  z-index: 1000;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  height: 64px;
-  box-sizing: border-box;
+  z-index: 9999;
+  height: 3px;
+  
+  ::ng-deep .mat-mdc-progress-bar-buffer {
+    background: rgba(37, 99, 235, 0.1);
+  }
+  
+  ::ng-deep .mat-mdc-progress-bar-primary {
+    background: var(--primary-color);
+  }
 }
 
-.app-header h1 {
-  margin: 0;
-  font-size: 1.5rem;
-  font-weight: 400;
-}
+// =============================================================================
+// APP CONTAINER
+// =============================================================================
 
-.app-header .header-content {
-  display: flex;
-  align-items: center;
-  width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.app-header .app-title {
-  display: flex;
-  align-items: center;
-}
-
-.app-header .app-icon {
-  margin-right: 8px;
-  font-size: 24px;
-}
-
-.app-header .spacer {
-  flex: 1 1 auto;
-}
-
-.app-header nav {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.app-header nav button {
-  background: rgba(255,255,255,0.2);
-  border: 1px solid rgba(255,255,255,0.3);
-  color: white;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background 0.2s ease;
-}
-
-.app-header nav button:hover {
-  background: rgba(255,255,255,0.3);
-}
-
-.app-header nav button.active {
-  background: rgba(255,255,255,0.4);
-}
-
-/* =============================================================================
-   MAIN CONTENT (Con supporto per sidebar)
-   ============================================================================= */
-
-.main-content {
-  flex: 1;
-  padding: 1rem;
-  margin-top: 64px; /* Spazio per header fisso */
-  background-color: #fafafa;
-}
-
-.content-area {
-  max-width: 1200px;
-  margin: 0 auto;
-  min-height: calc(100vh - 64px);
-}
-
-/* =============================================================================
-   LOADING STATES
-   ============================================================================= */
-
-.loading {
-  text-align: center;
-  padding: 2rem;
-  background: #f5f5f5;
-}
-
-.page-loading {
+.app-container {
+  height: 100vh;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 200px;
+  overflow: hidden;
+  
+  &.loading {
+    pointer-events: none;
+    opacity: 0.95;
+  }
 }
 
-.page-loading p {
-  color: #666;
-  margin: 16px 0 0 0;
-}
-
-/* =============================================================================
-   SIDEBAR/NAVIGATION (Opzionale)
-   ============================================================================= */
+// =============================================================================
+// AUTHENTICATED LAYOUT
+// =============================================================================
 
 .authenticated-layout {
-  display: flex;
-  flex-direction: column;
   height: 100vh;
-}
-
-.sidenav-container {
-  flex: 1;
-  margin-top: 64px;
-  display: flex;
-}
-
-.sidenav {
-  width: 280px;
-  border-right: 1px solid #e0e0e0;
-  background-color: white;
-  box-shadow: 2px 0 4px rgba(0,0,0,0.1);
-}
-
-.sidenav-content {
-  padding: 16px 0;
-  height: 100%;
   display: flex;
   flex-direction: column;
+  
+  // HEADER
+  .app-header {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+    box-shadow: var(--shadow-md);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    z-index: 1000;
+    
+    ::ng-deep .mat-toolbar {
+      padding: 0;
+      height: 64px;
+      min-height: 64px;
+    }
+    
+    .header-content {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 1rem;
+      height: 64px;
+    }
+    
+    .menu-button {
+      margin-right: 1rem;
+      color: white;
+      
+      &:hover {
+        background: rgba(255, 255, 255, 0.1);
+      }
+    }
+    
+    .app-title {
+      display: flex;
+      align-items: center;
+      color: white;
+      cursor: pointer;
+      padding: 0.5rem 1rem;
+      border-radius: var(--radius-md);
+      transition: all 0.2s ease;
+      text-decoration: none;
+      
+      &:hover {
+        background: rgba(255, 255, 255, 0.1);
+        transform: translateY(-1px);
+      }
+      
+      .app-icon {
+        margin-right: 0.75rem;
+        font-size: 28px;
+        background: rgba(255, 255, 255, 0.15);
+        padding: 6px;
+        border-radius: var(--radius-sm);
+      }
+      
+      h1 {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 600;
+        letter-spacing: -0.025em;
+      }
+    }
+    
+    .spacer {
+      flex: 1;
+    }
+    
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      
+      button {
+        color: white;
+        position: relative;
+        transition: all 0.2s ease;
+        
+        &:hover {
+          background: rgba(255, 255, 255, 0.1);
+          transform: translateY(-1px);
+        }
+        
+        ::ng-deep .mat-badge-content {
+          background: var(--error-color);
+          color: white;
+          font-size: 11px;
+          font-weight: 600;
+          min-width: 18px;
+          height: 18px;
+          line-height: 18px;
+        }
+      }
+    }
+  }
+  
+  // SIDENAV CONTAINER
+  .sidenav-container {
+    flex: 1;
+    
+    .sidenav {
+      width: 280px;
+      background: var(--bg-primary);
+      border-right: 1px solid var(--border-color);
+      box-shadow: var(--shadow-sm);
+      
+      .sidenav-content {
+        padding: 1.5rem 0;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+      }
+      
+      // NAVIGATION LIST
+      ::ng-deep mat-nav-list {
+        flex: 1;
+        padding-top: 0;
+        
+        h3[matSubheader] {
+          color: var(--text-secondary);
+          font-size: 0.75rem;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          margin: 1rem 1.5rem 0.5rem;
+          padding: 0;
+          line-height: 1;
+        }
+        
+        a[mat-list-item] {
+          margin: 0.25rem 1rem;
+          border-radius: var(--radius-md);
+          transition: all 0.2s ease;
+          color: var(--text-secondary);
+          
+          &:hover {
+            background: rgba(37, 99, 235, 0.05);
+            color: var(--primary-color);
+            transform: translateX(4px);
+          }
+          
+          &.active {
+            background: rgba(37, 99, 235, 0.1);
+            color: var(--primary-color);
+            font-weight: 500;
+            box-shadow: var(--shadow-sm);
+            
+            ::ng-deep .mat-icon {
+              color: var(--primary-color);
+            }
+          }
+          
+          ::ng-deep .mat-icon {
+            color: var(--text-muted);
+            margin-right: 1rem;
+            transition: color 0.2s ease;
+          }
+          
+          ::ng-deep .mdc-list-item__content {
+            padding: 0.75rem 1rem;
+          }
+          
+          &:first-of-type {
+            margin-top: 0;
+          }
+        }
+        
+        ::ng-deep .mat-divider {
+          margin: 1rem 1.5rem;
+          border-color: var(--border-color);
+        }
+      }
+      
+      // QUICK ACTIONS
+      .quick-actions {
+        padding: 1.5rem;
+        border-top: 1px solid var(--border-color);
+        background: var(--bg-secondary);
+        
+        h3[matSubheader] {
+          color: var(--text-secondary);
+          font-size: 0.75rem;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          margin: 0 0 1rem 0;
+          padding: 0;
+        }
+        
+        .full-width-btn {
+          width: 100%;
+          margin-bottom: 0.75rem;
+          border-radius: var(--radius-md);
+          font-weight: 500;
+          padding: 0.75rem 1rem;
+          
+          &:last-child {
+            margin-bottom: 0;
+          }
+          
+          ::ng-deep .mat-icon {
+            margin-right: 0.5rem;
+          }
+          
+          &[color="primary"] {
+            background: var(--primary-color);
+            color: white;
+            box-shadow: var(--shadow-sm);
+            
+            &:hover {
+              background: var(--primary-dark);
+              transform: translateY(-1px);
+              box-shadow: var(--shadow-md);
+            }
+          }
+          
+          &[mat-stroked-button] {
+            border-color: var(--border-color);
+            color: var(--text-secondary);
+            
+            &:hover {
+              background: var(--bg-tertiary);
+              border-color: var(--primary-color);
+              color: var(--primary-color);
+            }
+          }
+        }
+      }
+    }
+    
+    // MAIN CONTENT
+    .main-content {
+      background: var(--bg-secondary);
+      
+      .content-area {
+        padding: 2rem;
+        min-height: calc(100vh - 64px);
+        max-width: 1200px;
+        margin: 0 auto;
+        
+        ::ng-deep router-outlet + * {
+          animation: fadeInUp 0.3s ease-out;
+        }
+      }
+    }
+  }
 }
 
-.sidenav nav {
-  flex: 1;
-}
-
-.sidenav nav ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.sidenav nav li {
-  margin: 4px 12px;
-}
-
-.sidenav nav a {
-  display: flex;
-  align-items: center;
-  padding: 12px 16px;
-  text-decoration: none;
-  color: #333;
-  border-radius: 8px;
-  transition: background-color 0.2s ease;
-}
-
-.sidenav nav a:hover {
-  background-color: rgba(0,0,0,0.04);
-}
-
-.sidenav nav a.active {
-  background-color: rgba(25, 118, 210, 0.1);
-  color: #1976d2;
-}
-
-.sidenav nav a .icon {
-  margin-right: 12px;
-  width: 24px;
-  text-align: center;
-}
-
-/* =============================================================================
-   GUEST LAYOUT (Per pagine di login/registrazione)
-   ============================================================================= */
+// =============================================================================
+// GUEST LAYOUT
+// =============================================================================
 
 .guest-layout {
   height: 100vh;
-  display: flex;
-  flex-direction: column;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-
-.guest-header {
-  background: transparent;
   position: relative;
-}
-
-.guest-content {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-}
-
-/* =============================================================================
-   FLOATING ACTION BUTTON
-   ============================================================================= */
-
-.global-fab {
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-  z-index: 1000;
-  background: #1976d2;
-  color: white;
-  border: none;
-  border-radius: 50%;
-  width: 56px;
-  height: 56px;
-  cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  transition: transform 0.2s ease;
-}
-
-.global-fab:hover {
-  transform: scale(1.05);
-}
-
-/* =============================================================================
-   USER MENU
-   ============================================================================= */
-
-.user-button {
-  background: rgba(255,255,255,0.1);
-  border: 1px solid rgba(255,255,255,0.2);
-  color: white;
-  padding: 8px 12px;
-  border-radius: 4px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.user-info {
-  padding: 16px;
-  border-bottom: 1px solid #e0e0e0;
-}
-
-.user-details {
-  display: flex;
-  flex-direction: column;
-}
-
-.user-details strong {
-  font-size: 14px;
-  margin-bottom: 4px;
-}
-
-.user-details small {
-  color: #666;
-  font-size: 12px;
-}
-
-/* =============================================================================
-   RESPONSIVE DESIGN
-   ============================================================================= */
-
-@media (max-width: 768px) {
-  .app-header {
-    padding: 0.5rem;
-  }
+  overflow: hidden;
   
-  .app-header h1 {
-    font-size: 1.25rem;
-  }
-  
-  .main-content {
-    padding: 0.5rem;
-  }
-  
-  .sidenav {
-    width: 100%;
-    position: fixed;
-    top: 64px;
-    left: 0;
-    bottom: 0;
-    z-index: 999;
-    transform: translateX(-100%);
-    transition: transform 0.3s ease;
-  }
-  
-  .sidenav.open {
-    transform: translateX(0);
-  }
-  
-  .sidebar-backdrop {
-    position: fixed;
+  &::before {
+    content: '';
+    position: absolute;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(0,0,0,0.5);
-    z-index: 998;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.3s ease;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E") repeat;
   }
   
-  .sidebar-backdrop.show {
+  .guest-header {
+    position: relative;
+    z-index: 10;
+    background: transparent;
+    
+    ::ng-deep .mat-toolbar {
+      background: transparent;
+      padding: 0;
+    }
+    
+    .guest-header-content {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1.5rem 2rem;
+    }
+    
+    .app-brand {
+      display: flex;
+      align-items: center;
+      color: white;
+      
+      .brand-icon {
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(10px);
+        border-radius: var(--radius-lg);
+        padding: 0.75rem;
+        margin-right: 1rem;
+        font-size: 32px;
+        box-shadow: var(--shadow-lg);
+      }
+      
+      h1 {
+        margin: 0;
+        font-size: 1.875rem;
+        font-weight: 300;
+        letter-spacing: -0.025em;
+      }
+    }
+    
+    .guest-actions {
+      display: flex;
+      gap: 1rem;
+      
+      button {
+        padding: 0.75rem 1.5rem;
+        border-radius: 50px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+        
+        &[mat-button] {
+          color: white;
+          border: 1px solid rgba(255, 255, 255, 0.3);
+          background: rgba(255, 255, 255, 0.1);
+          
+          &:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+          }
+          
+          &.active {
+            background: rgba(255, 255, 255, 0.25);
+          }
+        }
+        
+        &[mat-raised-button] {
+          background: rgba(255, 255, 255, 0.9);
+          color: #667eea;
+          
+          &:hover {
+            background: white;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-xl);
+          }
+        }
+      }
+    }
+  }
+  
+  .guest-content {
+    flex: 1;
+    position: relative;
+    z-index: 10;
+    padding: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    .welcome-card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border-radius: 20px;
+      padding: 3rem;
+      text-align: center;
+      max-width: 500px;
+      box-shadow: var(--shadow-xl);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      
+      h2 {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        color: #333;
+        font-weight: 300;
+      }
+      
+      p {
+        font-size: 1.1rem;
+        color: #666;
+        margin-bottom: 2rem;
+        line-height: 1.6;
+      }
+      
+      .cta-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-bottom: 2rem;
+        
+        button {
+          padding: 1rem 2rem;
+          border-radius: 30px;
+          font-weight: 600;
+          font-size: 1rem;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          border: none;
+          min-width: 140px;
+          
+          &.primary {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            
+            &:hover {
+              transform: translateY(-3px);
+              box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+            }
+          }
+          
+          &.secondary {
+            background: transparent;
+            color: #667eea;
+            border: 2px solid #667eea;
+            
+            &:hover {
+              background: #667eea;
+              color: white;
+              transform: translateY(-3px);
+            }
+          }
+        }
+      }
+      
+      .test-controls {
+        padding-top: 2rem;
+        border-top: 1px solid #e0e0e0;
+        
+        p {
+          font-size: 0.875rem;
+          color: #999;
+          margin-bottom: 1rem;
+        }
+        
+        .test-btn {
+          color: #999;
+          font-size: 0.875rem;
+          
+          &:hover {
+            color: #667eea;
+          }
+        }
+      }
+    }
+  }
+}
+
+// =============================================================================
+// FLOATING ACTION BUTTON
+// =============================================================================
+
+.global-fab {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  z-index: 1000;
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+  box-shadow: var(--shadow-xl);
+  transition: all 0.3s ease;
+  
+  &:hover {
+    transform: scale(1.05) translateY(-2px);
+    box-shadow: 0 25px 35px -5px rgb(37 99 235 / 0.4);
+  }
+  
+  ::ng-deep .mat-icon {
+    font-size: 28px;
+    width: 28px;
+    height: 28px;
+  }
+}
+
+// =============================================================================
+// USER MENU
+// =============================================================================
+
+::ng-deep .mat-mdc-menu-panel {
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+  
+  .user-info {
+    padding: 1rem 1.5rem;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
+    cursor: default;
+    
+    .user-details {
+      display: flex;
+      flex-direction: column;
+      
+      strong {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 0.25rem;
+      }
+      
+      small {
+        color: var(--text-muted);
+        font-size: 0.75rem;
+      }
+    }
+  }
+  
+  .mat-mdc-menu-item {
+    padding: 0.75rem 1.5rem;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      background: rgba(37, 99, 235, 0.05);
+    }
+    
+    .mat-icon {
+      margin-right: 0.75rem;
+      color: var(--text-muted);
+    }
+  }
+}
+
+// =============================================================================
+// SIDEBAR BACKDROP
+// =============================================================================
+
+.sidebar-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+  backdrop-filter: blur(4px);
+}
+
+// =============================================================================
+// ANIMATIONS
+// =============================================================================
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
     opacity: 1;
-    visibility: visible;
+    transform: translateY(0);
+  }
+}
+
+// =============================================================================
+// RESPONSIVE DESIGN
+// =============================================================================
+
+@media (max-width: 768px) {
+  .authenticated-layout {
+    .app-header {
+      .header-content {
+        padding: 0 0.75rem;
+      }
+      
+      .app-title {
+        h1 {
+          font-size: 1.25rem;
+        }
+      }
+    }
+    
+    .sidenav-container {
+      .main-content .content-area {
+        padding: 1rem;
+      }
+    }
+  }
+  
+  .guest-layout {
+    .guest-header {
+      .guest-header-content {
+        padding: 1rem;
+        flex-direction: column;
+        gap: 1rem;
+      }
+      
+      .app-brand {
+        h1 {
+          font-size: 1.5rem;
+        }
+      }
+      
+      .guest-actions {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+    
+    .guest-content {
+      padding: 1rem;
+      
+      .welcome-card {
+        padding: 2rem;
+        
+        h2 {
+          font-size: 2rem;
+        }
+        
+        .cta-buttons {
+          flex-direction: column;
+          
+          button {
+            width: 100%;
+          }
+        }
+      }
+    }
   }
   
   .global-fab {
-    bottom: 16px;
-    right: 16px;
+    bottom: 1rem;
+    right: 1rem;
+    width: 56px;
+    height: 56px;
   }
 }
 
 @media (max-width: 480px) {
-  .app-header h1 {
-    display: none;
+  .authenticated-layout {
+    .app-title h1 {
+      display: none;
+    }
   }
   
-  .app-header nav {
-    flex-direction: column;
-    gap: 0.25rem;
+  .guest-layout {
+    .app-brand .brand-icon {
+      display: none;
+    }
   }
-  
-  .app-header nav button {
-    padding: 0.375rem 0.75rem;
-    font-size: 0.875rem;
-  }
-}
-
-/* =============================================================================
-   ACCESSIBILITY IMPROVEMENTS
-   ============================================================================= */
-
-button:focus,
-a:focus {
-  outline: 2px solid #1976d2;
-  outline-offset: 2px;
-}
-
-@media (prefers-contrast: high) {
-  .app-header {
-    border-bottom: 2px solid currentColor;
-  }
-  
-  .sidenav {
-    border-right: 2px solid currentColor;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  * {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-}
-
-/* =============================================================================
-   DARK THEME SUPPORT
-   ============================================================================= */
-
-.dark-theme .app-container {
-  background-color: #121212;
-  color: #ffffff;
-}
-
-.dark-theme .sidenav {
-  background-color: #1e1e1e;
-  border-right-color: #333;
-}
-
-.dark-theme .main-content {
-  background-color: #121212;
-}
-
-.dark-theme .sidenav nav a {
-  color: #ffffff;
-}
-
-.dark-theme .sidenav nav a:hover {
-  background-color: rgba(255,255,255,0.04);
-}
-
-.dark-theme .user-details small {
-  color: #aaa;
-}
-
-/* =============================================================================
-   UTILITY CLASSES
-   ============================================================================= */
-
-.full-width {
-  width: 100%;
-}
-
-.text-center {
-  text-align: center;
-}
-
-.hidden {
-  display: none;
-}
-
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
 }

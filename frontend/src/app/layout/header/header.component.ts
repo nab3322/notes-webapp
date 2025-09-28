@@ -1,44 +1,70 @@
-import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
+import { Component, EventEmitter, Output, Input } from '@angular/core';
 import { Router } from '@angular/router';
-import { User } from '@core/models/user.model';
+import { User } from '../../core/models/user.model';
 
 @Component({
   selector: 'app-header',
   templateUrl: './header.component.html',
-  styleUrls: ['./header.component.scss']
+  styleUrls: ['./header.component.scss'] // ✅ Cambiato da .css a .scss
 })
-export class HeaderComponent implements OnInit {
-  @Input() user: User | null = null;
+export class HeaderComponent {
   @Input() sidebarOpen = false;
+  @Input() user: User | null = null;
   @Input() notifications = 0;
-  
+  @Input() isDarkTheme = false; // ✅ Aggiunto
+
   @Output() menuToggle = new EventEmitter<void>();
-  @Output() logout = new EventEmitter<void>();
-  @Output() profileClick = new EventEmitter<void>();
-  @Output() notificationClick = new EventEmitter<void>();
-  @Output() searchQuery = new EventEmitter<string>();
+  @Output() themeToggle = new EventEmitter<void>();
 
-  constructor(private router: Router) { }
+  // Router reso pubblico per il template
+  constructor(public router: Router) {}
 
-  ngOnInit(): void { }
-
+  /**
+   * Gestisce il toggle del menu sidebar
+   */
   onMenuToggle(): void {
     this.menuToggle.emit();
   }
 
-  onLogout(): void {
-    this.logout.emit();
+  /**
+   * Gestisce la ricerca
+   */
+  onSearch(searchTerm: string): void {
+    if (searchTerm.trim()) {
+      this.router.navigate(['/search'], { 
+        queryParams: { q: searchTerm.trim() } 
+      });
+    }
   }
 
-  onProfileClick(): void {
-    this.profileClick.emit();
-  }
-
+  /**
+   * Gestisce il click sulle notifiche
+   */
   onNotificationClick(): void {
-    this.notificationClick.emit();
+    this.router.navigate(['/notifications']);
   }
 
-  onSearch(query: string): void {
-    this.searchQuery.emit(query);
+  /**
+   * Gestisce il click sul profilo
+   */
+  onProfileClick(): void {
+    this.router.navigate(['/profile']);
+  }
+
+  /**
+   * Gestisce il toggle del tema
+   * ✅ Metodo aggiunto
+   */
+  onThemeToggle(): void {
+    this.themeToggle.emit();
+  }
+
+  /**
+   * Gestisce il logout
+   */
+  onLogout(): void {
+    if (confirm('Sei sicuro di voler effettuare il logout?')) {
+      this.router.navigate(['/login']);
+    }
   }
 }
