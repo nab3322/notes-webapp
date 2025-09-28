@@ -36,6 +36,8 @@ export interface FolderStats {
   size: number; // in bytes
 }
 
+export type PermissionType = 'read' | 'write' | 'admin';
+
 export interface FolderPermission {
   id: number;
   folderId: number;
