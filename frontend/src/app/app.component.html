@@ -15,34 +15,36 @@
     <!-- Header -->
     <mat-toolbar color="primary" class="app-header">
       <div class="header-content">
-        <!-- Menu Button -->
+        <!-- Menu Button - SEMPRE VISIBILE -->
         <button mat-icon-button 
                 (click)="toggleSidebar()"
-                class="menu-button"
+                class="menu-button visible-button"
                 matTooltip="Menu">
           <mat-icon>menu</mat-icon>
         </button>
 
         <!-- App Title -->
         <div class="app-title" (click)="navigateTo('/dashboard')">
-          <mat-icon class="app-icon">note</mat-icon>
+          <span class="app-icon">📝</span>
           <h1>{{ appName }}</h1>
         </div>
 
         <!-- Spacer -->
         <span class="spacer"></span>
 
-        <!-- Header Actions -->
-        <div class="header-actions">
-          <!-- Search Button -->
+        <!-- Header Actions - SEMPRE VISIBILI -->
+        <div class="header-actions visible-actions">
+          <!-- Search Button - SEMPRE VISIBILE -->
           <button mat-icon-button 
+                  class="visible-button"
                   matTooltip="Cerca"
                   (click)="navigateTo('/search')">
             <mat-icon>search</mat-icon>
           </button>
 
-          <!-- Notifications -->
+          <!-- Notifications - SEMPRE VISIBILE -->
           <button mat-icon-button 
+                  class="visible-button"
                   matTooltip="Notifiche"
                   [matBadge]="(unreadNotifications$ | async) || 0"
                   [matBadgeHidden]="(unreadNotifications$ | async) === 0"
@@ -51,10 +53,10 @@
             <mat-icon>notifications</mat-icon>
           </button>
 
-          <!-- User Menu -->
+          <!-- User Menu - SEMPRE VISIBILE -->
           <button mat-icon-button 
                   [matMenuTriggerFor]="userMenu"
-                  class="user-button"
+                  class="user-button visible-button"
                   matTooltip="Menu utente">
             <mat-icon>account_circle</mat-icon>
           </button>
@@ -105,6 +107,11 @@
           <mat-nav-list>
             <h3 matSubheader>Menu Principale</h3>
             
+            <a mat-list-item (click)="navigateTo('/search')" [class.active]="isActiveRoute('/search')">
+              <mat-icon matListItemIcon>search</mat-icon>
+              <div matListItemTitle>Ricerca</div>
+            </a>
+            
             <a mat-list-item (click)="navigateTo('/dashboard')" [class.active]="isActiveRoute('/dashboard')">
               <mat-icon matListItemIcon>dashboard</mat-icon>
               <div matListItemTitle>Dashboard</div>
@@ -121,25 +128,20 @@
             </a>
             
             <mat-divider></mat-divider>
-            
-            <a mat-list-item (click)="navigateTo('/search')" [class.active]="isActiveRoute('/search')">
-              <mat-icon matListItemIcon>search</mat-icon>
-              <div matListItemTitle>Ricerca</div>
-            </a>
           </mat-nav-list>
 
-          <!-- Quick Actions -->
-          <div class="quick-actions">
-            <h3 matSubheader>Azioni Rapide</h3>
+          <!-- Quick Actions - SEMPRE VISIBILI -->
+          <div class="quick-actions visible-quick-actions">
+            <h3 matSubheader class="visible-subheader">Azioni Rapide</h3>
             <button mat-raised-button 
                     color="primary" 
-                    class="full-width-btn"
+                    class="full-width-btn visible-button new-note-btn"
                     (click)="createNewNote()">
               <mat-icon>add</mat-icon>
               Nuova Nota
             </button>
             <button mat-stroked-button 
-                    class="full-width-btn"
+                    class="full-width-btn visible-button new-folder-btn"
                     (click)="createNewFolder()">
               <mat-icon>create_new_folder</mat-icon>
               Nuova Cartella
@@ -160,7 +162,7 @@
 
   </div>
 
-  <!-- Guest Layout (Login/Register) -->
+  <!-- Guest Layout (SEMPLIFICATO - SOLO HEADER) -->
   <ng-template #guestLayout>
     <div class="guest-layout">
       
@@ -178,47 +180,26 @@
                     [class.active]="isActiveRoute('/auth/login')">
               Accedi
             </button>
+            
             <button mat-raised-button 
                     color="accent"
                     (click)="navigateTo('/auth/register')"
                     [class.active]="isActiveRoute('/auth/register')">
               Registrati
             </button>
+            
+            <!-- Bottone test sviluppatore spostato qui -->
+            <button mat-stroked-button
+                    class="dev-test-btn"
+                    (click)="switchToAuthenticatedMode()">
+              Test App
+            </button>
           </div>
         </div>
       </mat-toolbar>
 
-      <!-- Guest Content -->
+      <!-- Guest Content - SOLO router-outlet -->
       <div class="guest-content">
-        <!-- Welcome Card -->
-        <div class="welcome-card">
-          <h2>Benvenuto in Notes App</h2>
-          <p>Crea, organizza e condividi le tue note in modo semplice e sicuro. Collabora con altri e mantieni tutto sincronizzato.</p>
-          
-          <div class="cta-buttons">
-            <button mat-raised-button 
-                    class="primary"
-                    (click)="navigateTo('/auth/register')">
-              Inizia Gratis
-            </button>
-            <button mat-stroked-button 
-                    class="secondary"
-                    (click)="navigateTo('/auth/login')">
-              Hai già un account?
-            </button>
-          </div>
-          
-          <!-- Testing Controls -->
-          <div class="test-controls">
-            <p>Demo per sviluppo:</p>
-            <button mat-button 
-                    class="test-btn"
-                    (click)="switchToAuthenticatedMode()">
-              Testa Layout Autenticato
-            </button>
-          </div>
-        </div>
-        
         <router-outlet></router-outlet>
       </div>
 
@@ -227,15 +208,17 @@
 
 </div>
 
-<!-- Floating Action Button -->
+<!-- Floating Action Button - RIMOSSO -->
+<!-- 
 <button mat-fab 
         color="primary"
-        class="global-fab"
+        class="global-fab visible-fab"
         *ngIf="(isLoggedIn$ | async) && (showGlobalFab$ | async)"
         (click)="onGlobalFabClick()"
         [matTooltip]="globalFabTooltip">
   <mat-icon>{{ globalFabIcon }}</mat-icon>
 </button>
+-->
 
 <!-- Mobile Sidebar Backdrop -->
 <div class="sidebar-backdrop" 

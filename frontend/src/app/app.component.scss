@@ -1,5 +1,5 @@
 // =============================================================================
-// MODERN CLEAN APP STYLES
+// MODERN CLEAN APP STYLES - VERSIONE FINALE CON TUTTE LE CORREZIONI
 // =============================================================================
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
@@ -48,6 +48,37 @@ body {
 }
 
 // =============================================================================
+// FORZATURA VISIBILITÀ GLOBALE - PRIORITÀ MASSIMA
+// =============================================================================
+
+.visible-button,
+.visible-actions,
+.visible-quick-actions,
+.visible-subheader,
+.visible-fab,
+.new-note-btn,
+.new-folder-btn,
+.menu-button,
+.user-button,
+.header-actions button,
+.quick-actions button,
+.global-fab {
+  visibility: visible !important;
+  display: flex !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  position: relative !important;
+  z-index: 9999 !important;
+}
+
+.header-actions,
+.quick-actions {
+  visibility: visible !important;
+  display: flex !important;
+  opacity: 1 !important;
+}
+
+// =============================================================================
 // GLOBAL LOADING
 // =============================================================================
 
@@ -85,7 +116,7 @@ body {
 }
 
 // =============================================================================
-// AUTHENTICATED LAYOUT
+// AUTHENTICATED LAYOUT - FORZATURA COMPLETA
 // =============================================================================
 
 .authenticated-layout {
@@ -93,47 +124,79 @@ body {
   display: flex;
   flex-direction: column;
   
-  // HEADER
+  // HEADER - FORZATURA MASSIMA CON BACKGROUND NERO
   .app-header {
-    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
-    box-shadow: var(--shadow-md);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    z-index: 1000;
+    background: #000000 !important;
+    box-shadow: var(--shadow-md) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+    z-index: 10000 !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    height: 64px !important;
     
     ::ng-deep .mat-toolbar {
-      padding: 0;
-      height: 64px;
-      min-height: 64px;
+      padding: 0 !important;
+      height: 64px !important;
+      min-height: 64px !important;
+      background: transparent !important;
     }
     
     .header-content {
-      display: flex;
-      align-items: center;
-      width: 100%;
-      max-width: 1400px;
-      margin: 0 auto;
-      padding: 0 1rem;
-      height: 64px;
+      display: flex !important;
+      align-items: center !important;
+      width: 100% !important;
+      max-width: none !important;
+      margin: 0 auto !important;
+      padding: 0 1.5rem !important;
+      height: 64px !important;
+      background: transparent !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+      overflow: visible !important;
     }
     
+    // MENU BUTTON - FORZATURA ESTREMA
     .menu-button {
-      margin-right: 1rem;
-      color: white;
+      margin-right: 1rem !important;
+      color: white !important;
+      z-index: 10001 !important;
+      background: rgba(255, 255, 255, 0.2) !important;
+      border: 2px solid rgba(255, 255, 255, 0.3) !important;
+      border-radius: 8px !important;
+      width: 48px !important;
+      height: 48px !important;
+      visibility: visible !important;
+      display: flex !important;
+      opacity: 1 !important;
+      pointer-events: auto !important;
+      position: relative !important;
       
       &:hover {
-        background: rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.3) !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+      }
+      
+      ::ng-deep .mat-icon {
+        color: white !important;
+        font-size: 26px !important;
+        width: 26px !important;
+        height: 26px !important;
       }
     }
     
     .app-title {
       display: flex;
       align-items: center;
-      color: white;
+      color: white !important;
       cursor: pointer;
       padding: 0.5rem 1rem;
       border-radius: var(--radius-md);
       transition: all 0.2s ease;
       text-decoration: none;
+      z-index: 1001;
       
       &:hover {
         background: rgba(255, 255, 255, 0.1);
@@ -142,10 +205,17 @@ body {
       
       .app-icon {
         margin-right: 0.75rem;
-        font-size: 28px;
+        font-size: 28px !important;
         background: rgba(255, 255, 255, 0.15);
         padding: 6px;
         border-radius: var(--radius-sm);
+        color: white !important;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        line-height: 1;
       }
       
       h1 {
@@ -153,6 +223,7 @@ body {
         font-size: 1.5rem;
         font-weight: 600;
         letter-spacing: -0.025em;
+        color: white !important;
       }
     }
     
@@ -160,29 +231,86 @@ body {
       flex: 1;
     }
     
+    // HEADER ACTIONS - FORZATURA ESTREMA CON PIÙ SPAZIO
     .header-actions {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
+      display: flex !important;
+      align-items: center !important;
+      gap: 0.75rem !important;
+      z-index: 10001 !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+      pointer-events: auto !important;
+      position: relative !important;
+      flex-shrink: 0 !important;
+      margin-left: 1rem !important;
       
       button {
-        color: white;
-        position: relative;
-        transition: all 0.2s ease;
+        color: white !important;
+        position: relative !important;
+        transition: all 0.2s ease !important;
+        background: rgba(255, 255, 255, 0.2) !important;
+        border: 2px solid rgba(255, 255, 255, 0.25) !important;
+        border-radius: 8px !important;
+        width: 48px !important;
+        height: 48px !important;
+        min-width: 48px !important;
+        visibility: visible !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+        z-index: 10002 !important;
+        flex-shrink: 0 !important;
         
         &:hover {
-          background: rgba(255, 255, 255, 0.1);
-          transform: translateY(-1px);
+          background: rgba(255, 255, 255, 0.3) !important;
+          transform: translateY(-3px) !important;
+          box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25) !important;
+          border-color: rgba(255, 255, 255, 0.4) !important;
+        }
+        
+        ::ng-deep .mat-icon {
+          color: white !important;
+          font-size: 24px !important;
+          width: 24px !important;
+          height: 24px !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
         }
         
         ::ng-deep .mat-badge-content {
-          background: var(--error-color);
-          color: white;
-          font-size: 11px;
-          font-weight: 600;
-          min-width: 18px;
-          height: 18px;
-          line-height: 18px;
+          background: #ff1744 !important;
+          color: white !important;
+          font-size: 11px !important;
+          font-weight: 700 !important;
+          min-width: 20px !important;
+          height: 20px !important;
+          line-height: 20px !important;
+          border: 2px solid white !important;
+          box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3) !important;
+          z-index: 10003 !important;
+        }
+      }
+      
+      .user-button {
+        border: 2px solid rgba(255, 255, 255, 0.4) !important;
+        width: 48px !important;
+        height: 48px !important;
+        min-width: 48px !important;
+        
+        &:hover {
+          border-color: rgba(255, 255, 255, 0.6) !important;
+        }
+        
+        ::ng-deep .mat-icon {
+          font-size: 24px !important;
+          width: 24px !important;
+          height: 24px !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
         }
       }
     }
@@ -191,24 +319,32 @@ body {
   // SIDENAV CONTAINER
   .sidenav-container {
     flex: 1;
+    margin-top: 64px; // Spazio per header fisso
     
     .sidenav {
       width: 280px;
+      min-width: 280px;
+      max-width: 280px;
       background: var(--bg-primary);
       border-right: 1px solid var(--border-color);
       box-shadow: var(--shadow-sm);
+      overflow-x: hidden !important;
+      overflow-y: auto !important;
       
       .sidenav-content {
         padding: 1.5rem 0;
         height: 100%;
         display: flex;
         flex-direction: column;
+        overflow-x: hidden !important;
+        min-width: 280px;
       }
       
       // NAVIGATION LIST
       ::ng-deep mat-nav-list {
         flex: 1;
         padding-top: 0;
+        overflow-x: hidden !important;
         
         h3[matSubheader] {
           color: var(--text-secondary);
@@ -219,6 +355,8 @@ body {
           margin: 1rem 1.5rem 0.5rem;
           padding: 0;
           line-height: 1;
+          white-space: nowrap;
+          overflow: hidden;
         }
         
         a[mat-list-item] {
@@ -226,6 +364,8 @@ body {
           border-radius: var(--radius-md);
           transition: all 0.2s ease;
           color: var(--text-secondary);
+          white-space: nowrap;
+          overflow: hidden;
           
           &:hover {
             background: rgba(37, 99, 235, 0.05);
@@ -248,10 +388,18 @@ body {
             color: var(--text-muted);
             margin-right: 1rem;
             transition: color 0.2s ease;
+            flex-shrink: 0;
           }
           
           ::ng-deep .mdc-list-item__content {
             padding: 0.75rem 1rem;
+            overflow: hidden;
+          }
+          
+          ::ng-deep div[matListItemTitle] {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
           }
           
           &:first-of-type {
@@ -265,57 +413,96 @@ body {
         }
       }
       
-      // QUICK ACTIONS
+      // QUICK ACTIONS - FORZATURA ESTREMA
       .quick-actions {
-        padding: 1.5rem;
-        border-top: 1px solid var(--border-color);
-        background: var(--bg-secondary);
+        padding: 2rem 1.5rem !important;
+        border-top: 2px solid var(--primary-color) !important;
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%) !important;
+        margin-top: auto !important;
+        visibility: visible !important;
+        display: block !important;
+        opacity: 1 !important;
+        position: relative !important;
+        z-index: 9999 !important;
         
         h3[matSubheader] {
-          color: var(--text-secondary);
-          font-size: 0.75rem;
-          font-weight: 600;
-          text-transform: uppercase;
-          letter-spacing: 0.05em;
-          margin: 0 0 1rem 0;
-          padding: 0;
+          color: var(--primary-color) !important;
+          font-size: 0.8rem !important;
+          font-weight: 700 !important;
+          text-transform: uppercase !important;
+          letter-spacing: 0.1em !important;
+          margin: 0 0 1.5rem 0 !important;
+          padding: 0 !important;
+          display: block !important;
+          visibility: visible !important;
+          opacity: 1 !important;
+          text-align: center !important;
         }
         
         .full-width-btn {
-          width: 100%;
-          margin-bottom: 0.75rem;
-          border-radius: var(--radius-md);
-          font-weight: 500;
-          padding: 0.75rem 1rem;
+          width: 100% !important;
+          margin-bottom: 1rem !important;
+          border-radius: 12px !important;
+          font-weight: 600 !important;
+          padding: 1rem 1.5rem !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          position: relative !important;
+          overflow: visible !important;
+          visibility: visible !important;
+          opacity: 1 !important;
+          pointer-events: auto !important;
+          z-index: 10000 !important;
+          font-size: 1rem !important;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
           
           &:last-child {
-            margin-bottom: 0;
+            margin-bottom: 0 !important;
           }
           
           ::ng-deep .mat-icon {
-            margin-right: 0.5rem;
+            margin-right: 0.75rem !important;
+            font-size: 22px !important;
+            width: 22px !important;
+            height: 22px !important;
           }
           
-          &[color="primary"] {
-            background: var(--primary-color);
-            color: white;
-            box-shadow: var(--shadow-sm);
+          // NUOVA NOTA - STILE ESTREMO
+          &[color="primary"],
+          &.new-note-btn {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8) !important;
+            color: white !important;
+            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.4) !important;
+            border: 3px solid #1e40af !important;
+            font-size: 1.1rem !important;
+            min-height: 56px !important;
             
             &:hover {
-              background: var(--primary-dark);
-              transform: translateY(-1px);
-              box-shadow: var(--shadow-md);
+              background: linear-gradient(135deg, #1d4ed8, #1e40af) !important;
+              transform: translateY(-4px) scale(1.02) !important;
+              box-shadow: 0 12px 30px rgba(37, 99, 235, 0.5) !important;
+            }
+            
+            &:active {
+              transform: translateY(-2px) scale(1.01) !important;
             }
           }
           
-          &[mat-stroked-button] {
-            border-color: var(--border-color);
-            color: var(--text-secondary);
+          // NUOVA CARTELLA - STILE ESTREMO
+          &[mat-stroked-button],
+          &.new-folder-btn {
+            border: 3px solid var(--primary-color) !important;
+            color: var(--primary-color) !important;
+            background: rgba(37, 99, 235, 0.1) !important;
+            min-height: 52px !important;
             
             &:hover {
-              background: var(--bg-tertiary);
-              border-color: var(--primary-color);
-              color: var(--primary-color);
+              background: rgba(37, 99, 235, 0.2) !important;
+              border-color: var(--primary-dark) !important;
+              color: var(--primary-dark) !important;
+              transform: translateY(-2px) scale(1.01) !important;
+              box-shadow: 0 6px 15px rgba(37, 99, 235, 0.3) !important;
             }
           }
         }
@@ -341,7 +528,7 @@ body {
 }
 
 // =============================================================================
-// GUEST LAYOUT
+// GUEST LAYOUT - SEMPLIFICATO
 // =============================================================================
 
 .guest-layout {
@@ -405,6 +592,7 @@ body {
     .guest-actions {
       display: flex;
       gap: 1rem;
+      align-items: center;
       
       button {
         padding: 0.75rem 1.5rem;
@@ -438,6 +626,19 @@ body {
             box-shadow: var(--shadow-xl);
           }
         }
+        
+        &[mat-stroked-button].dev-test-btn {
+          color: rgba(255, 255, 255, 0.7);
+          border-color: rgba(255, 255, 255, 0.3);
+          font-size: 0.875rem;
+          padding: 0.5rem 1rem;
+          
+          &:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border-color: rgba(255, 255, 255, 0.5);
+          }
+        }
       }
     }
   }
@@ -448,120 +649,54 @@ body {
     z-index: 10;
     padding: 2rem;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
-    
-    .welcome-card {
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(20px);
-      border-radius: 20px;
-      padding: 3rem;
-      text-align: center;
-      max-width: 500px;
-      box-shadow: var(--shadow-xl);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      
-      h2 {
-        font-size: 2.5rem;
-        margin-bottom: 1rem;
-        color: #333;
-        font-weight: 300;
-      }
-      
-      p {
-        font-size: 1.1rem;
-        color: #666;
-        margin-bottom: 2rem;
-        line-height: 1.6;
-      }
-      
-      .cta-buttons {
-        display: flex;
-        gap: 1rem;
-        justify-content: center;
-        flex-wrap: wrap;
-        margin-bottom: 2rem;
-        
-        button {
-          padding: 1rem 2rem;
-          border-radius: 30px;
-          font-weight: 600;
-          font-size: 1rem;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          border: none;
-          min-width: 140px;
-          
-          &.primary {
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            color: white;
-            
-            &:hover {
-              transform: translateY(-3px);
-              box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
-            }
-          }
-          
-          &.secondary {
-            background: transparent;
-            color: #667eea;
-            border: 2px solid #667eea;
-            
-            &:hover {
-              background: #667eea;
-              color: white;
-              transform: translateY(-3px);
-            }
-          }
-        }
-      }
-      
-      .test-controls {
-        padding-top: 2rem;
-        border-top: 1px solid #e0e0e0;
-        
-        p {
-          font-size: 0.875rem;
-          color: #999;
-          margin-bottom: 1rem;
-        }
-        
-        .test-btn {
-          color: #999;
-          font-size: 0.875rem;
-          
-          &:hover {
-            color: #667eea;
-          }
-        }
-      }
-    }
+    padding-top: 4rem; // Spazio per header fisso
   }
 }
 
 // =============================================================================
-// FLOATING ACTION BUTTON
+// FLOATING ACTION BUTTON - FORZATURA ESTREMA (RIMOSSO)
 // =============================================================================
 
 .global-fab {
-  position: fixed;
-  bottom: 2rem;
-  right: 2rem;
-  z-index: 1000;
-  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-  box-shadow: var(--shadow-xl);
-  transition: all 0.3s ease;
+  position: fixed !important;
+  bottom: 2rem !important;
+  right: 2rem !important;
+  z-index: 20000 !important;
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)) !important;
+  box-shadow: 0 12px 30px rgba(37, 99, 235, 0.5) !important;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+  width: 72px !important;
+  height: 72px !important;
+  border: 4px solid white !important;
+  visibility: visible !important;
+  display: flex !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
   
   &:hover {
-    transform: scale(1.05) translateY(-2px);
-    box-shadow: 0 25px 35px -5px rgb(37 99 235 / 0.4);
+    transform: scale(1.15) translateY(-6px) !important;
+    box-shadow: 0 20px 40px rgba(37, 99, 235, 0.6) !important;
+    background: linear-gradient(135deg, var(--primary-dark), #1e40af) !important;
+  }
+  
+  &:active {
+    transform: scale(1.1) translateY(-3px) !important;
   }
   
   ::ng-deep .mat-icon {
-    font-size: 28px;
-    width: 28px;
-    height: 28px;
+    font-size: 36px !important;
+    width: 36px !important;
+    height: 36px !important;
+    color: white !important;
   }
+  
+  ::ng-deep .mat-mdc-fab {
+    background: transparent !important;
+  }
+  
+  animation: fabPulseStrong 2.5s infinite ease-in-out;
 }
 
 // =============================================================================
@@ -629,7 +764,7 @@ body {
 }
 
 // =============================================================================
-// ANIMATIONS
+// ANIMATIONS POTENZIATE
 // =============================================================================
 
 @keyframes fadeInUp {
@@ -643,18 +778,48 @@ body {
   }
 }
 
+@keyframes fabPulseStrong {
+  0%, 100% {
+    box-shadow: 0 12px 30px rgba(37, 99, 235, 0.5), 0 0 0 0 rgba(37, 99, 235, 0.6);
+  }
+  50% {
+    box-shadow: 0 12px 30px rgba(37, 99, 235, 0.5), 0 0 0 15px rgba(37, 99, 235, 0);
+  }
+}
+
 // =============================================================================
-// RESPONSIVE DESIGN
+// RESPONSIVE DESIGN CON FORZATURE
 // =============================================================================
 
 @media (max-width: 768px) {
   .authenticated-layout {
     .app-header {
       .header-content {
-        padding: 0 0.75rem;
+        padding: 0 0.75rem !important;
+        justify-content: space-between !important;
+      }
+      
+      .header-actions {
+        gap: 0.5rem !important;
+        flex-shrink: 0 !important;
+        
+        button {
+          width: 40px !important;
+          height: 40px !important;
+          flex-shrink: 0 !important;
+        }
+      }
+      
+      .menu-button {
+        width: 40px !important;
+        height: 40px !important;
+        flex-shrink: 0 !important;
       }
       
       .app-title {
+        flex: 1 !important;
+        min-width: 0 !important;
+        
         h1 {
           font-size: 1.25rem;
         }
@@ -662,6 +827,11 @@ body {
     }
     
     .sidenav-container {
+      .sidenav {
+        width: 260px !important;
+        min-width: 260px !important;
+      }
+      
       .main-content .content-area {
         padding: 1rem;
       }
@@ -685,35 +855,37 @@ body {
       .guest-actions {
         width: 100%;
         justify-content: center;
+        flex-wrap: wrap;
       }
     }
     
     .guest-content {
       padding: 1rem;
-      
-      .welcome-card {
-        padding: 2rem;
-        
-        h2 {
-          font-size: 2rem;
-        }
-        
-        .cta-buttons {
-          flex-direction: column;
-          
-          button {
-            width: 100%;
-          }
-        }
-      }
+      padding-top: 2rem;
     }
   }
   
   .global-fab {
-    bottom: 1rem;
-    right: 1rem;
-    width: 56px;
-    height: 56px;
+    bottom: 1.5rem !important;
+    right: 1.5rem !important;
+    width: 64px !important;
+    height: 64px !important;
+    
+    ::ng-deep .mat-icon {
+      font-size: 32px !important;
+      width: 32px !important;
+      height: 32px !important;
+    }
+  }
+  
+  .sidenav .quick-actions {
+    padding: 1.5rem 1rem !important;
+    
+    .full-width-btn {
+      padding: 0.875rem 1rem !important;
+      font-size: 0.95rem !important;
+      min-height: 48px !important;
+    }
   }
 }
 
@@ -722,11 +894,101 @@ body {
     .app-title h1 {
       display: none;
     }
+    
+    .header-actions {
+      gap: 0.5rem !important;
+      
+      button {
+        width: 40px !important;
+        height: 40px !important;
+      }
+    }
+    
+    .menu-button {
+      width: 40px !important;
+      height: 40px !important;
+    }
   }
   
   .guest-layout {
     .app-brand .brand-icon {
       display: none;
     }
+    
+    .guest-actions {
+      button {
+        font-size: 0.875rem;
+        padding: 0.5rem 1rem;
+      }
+    }
   }
+  
+  .global-fab {
+    width: 56px !important;
+    height: 56px !important;
+    
+    ::ng-deep .mat-icon {
+      font-size: 28px !important;
+      width: 28px !important;
+      height: 28px !important;
+    }
+  }
+}
+
+// =============================================================================
+// DEBUG E FORZATURE FINALI
+// =============================================================================
+
+// Forzatura totale per elementi critici
+.authenticated-layout .app-header .menu-button,
+.authenticated-layout .app-header .header-actions,
+.authenticated-layout .app-header .header-actions button,
+.authenticated-layout .sidenav .quick-actions,
+.authenticated-layout .sidenav .quick-actions button,
+.global-fab {
+  visibility: visible !important;
+  display: flex !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  position: relative !important;
+  z-index: 99999 !important;
+}
+
+// Override Angular Material nascosti
+::ng-deep {
+  .mat-toolbar-row,
+  .mat-toolbar-single-row {
+    display: flex !important;
+  }
+  
+  .mat-icon-button {
+    display: inline-flex !important;
+  }
+  
+  .mat-raised-button,
+  .mat-stroked-button {
+    display: inline-flex !important;
+  }
+}
+
+// =============================================================================
+// UTILITIES
+// =============================================================================
+
+.text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
