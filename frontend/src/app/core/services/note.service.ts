@@ -218,10 +218,8 @@ export class NoteService {
   /**
    * Move note to folder
    */
-  moveNoteToFolder(noteId: string, folderId: string | null): Observable<Note> {
-    // Converti null in undefined per la compatibilità dei tipi
-    const folderIdValue = folderId === null ? undefined : folderId;
-    return this.updateNote(noteId, { folderId: folderIdValue });
+  moveToFolder(noteId: string, folderId: string | null): Observable<Note> {
+    return this.updateNote(noteId, { folderId: folderId ?? undefined });
   }
 
   /**
