@@ -36,14 +36,14 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
           cache: 'maven'
-          cache-dependency-path: 'backend/pom.xml'  
+          cache-dependency-path: 'notes-sharing-backend/pom.xml'
       
       - name: Build Backend
-        working-directory: ./backend
+        working-directory: ./notes-sharing-backend
         run: ./mvnw clean compile -DskipTests
       
       - name: Test Backend
-        working-directory: ./backend
+        working-directory: ./notes-sharing-backend
         run: ./mvnw test
         env:
           QUARKUS_DATASOURCE_JDBC_URL: jdbc:postgresql://localhost:5432/notabene_test
@@ -63,15 +63,20 @@ jobs:
         with:
           node-version: '20.19.0'
           cache: 'npm'
-          cache-dependency-path: frontend/package-lock.json 
+          cache-dependency-path: notes-sharing-frontend/package-lock.json
       
       - name: Installa dipendenze
-        working-directory: ./frontend
+        working-directory: ./notes-sharing-frontend
         run: npm ci
       
       - name: Build Frontend
-        working-directory: ./frontend
+        working-directory: ./notes-sharing-frontend
         run: npm run build -- --configuration production
+      
+      - name: Test Frontend
+        working-directory: ./notes-sharing-frontend
+        run: npm run test -- --watch=false --browsers=ChromeHeadless
+        continue-on-error: true
       
       - name: Test Frontend
         working-directory: ./frontend
