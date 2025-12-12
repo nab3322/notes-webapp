@@ -1,5 +1,4 @@
 name: Backend CI
-
 on:
   push:
     branches: [ main, develop ]
@@ -10,12 +9,11 @@ on:
     branches: [ main, develop ]
     paths:
       - 'backend/**'
-
 jobs:
   test:
     name: Test Backend
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -31,6 +29,15 @@ jobs:
         working-directory: ./backend
         run: chmod +x mvnw
 
+      - name: Generate JWT Keys  # ⬅️ NUOVO STEP!
+        working-directory: ./backend
+        run: |
+          mkdir -p src/test/resources
+          cd src/test/resources
+          openssl genpkey -algorithm RSA -out privateKey.pem -pkeyopt rsa_keygen_bits:2048
+          openssl rsa -pubout -in privateKey.pem -out publicKey.pem
+          echo "JWT keys generated successfully"
+
       - name: Run tests with Maven
         working-directory: ./backend
         run: ./mvnw clean test
@@ -43,7 +50,7 @@ jobs:
     name: Build Backend
     runs-on: ubuntu-latest
     needs: test
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
