@@ -40,13 +40,9 @@ public class Note extends PanacheEntityBase {
     @OneToMany(mappedBy = "note", cascade = CascadeType.ALL, orphanRemoval = true)
     public Set<NotePermission> permissions = new HashSet<>();
 
-    @ManyToMany
-    @JoinTable(
-            name = "note_tags",
-            joinColumns = @JoinColumn(name = "note_id"),
-            inverseJoinColumns = @JoinColumn(name = "tag_id")
-    )
-    public Set<Tag> tags = new HashSet<>();
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "folder_id")
+    public Folder folder;
 
     @PrePersist
     protected void onCreate() {

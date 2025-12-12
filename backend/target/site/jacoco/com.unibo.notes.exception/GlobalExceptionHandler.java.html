@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="it"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GlobalExceptionHandler.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Notes WebApp Backend</a> &gt; <a href="index.source.html" class="el_package">com.unibo.notes.exception</a> &gt; <span class="el_source">GlobalExceptionHandler.java</span></div><h1>GlobalExceptionHandler.java</h1><pre class="source lang-java linenums">package com.unibo.notes.exception;
+
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.ext.ExceptionMapper;
+import jakarta.ws.rs.ext.Provider;
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Logger;
+
+@Provider
+<span class="fc" id="L12">public class GlobalExceptionHandler implements ExceptionMapper&lt;Exception&gt; {</span>
+
+<span class="fc" id="L14">    private static final Logger LOGGER = Logger.getLogger(GlobalExceptionHandler.class.getName());</span>
+
+    @Override
+    public Response toResponse(Exception exception) {
+
+        // ResourceNotFoundException -&gt; 404
+<span class="fc bfc" id="L20" title="All 2 branches covered.">        if (exception instanceof ResourceNotFoundException) {</span>
+<span class="fc" id="L21">            return buildErrorResponse(</span>
+                    Response.Status.NOT_FOUND,
+<span class="fc" id="L23">                    exception.getMessage(),</span>
+                    &quot;RESOURCE_NOT_FOUND&quot;
+            );
+        }
+
+        // ConflictException -&gt; 409
+<span class="fc bfc" id="L29" title="All 2 branches covered.">        if (exception instanceof ConflictException) {</span>
+<span class="fc" id="L30">            return buildErrorResponse(</span>
+                    Response.Status.CONFLICT,
+<span class="fc" id="L32">                    exception.getMessage(),</span>
+                    &quot;CONFLICT&quot;
+            );
+        }
+
+        // UnauthorizedException -&gt; 401
+<span class="pc bpc" id="L38" title="1 of 2 branches missed.">        if (exception instanceof UnauthorizedException) {</span>
+<span class="fc" id="L39">            return buildErrorResponse(</span>
+                    Response.Status.UNAUTHORIZED,
+<span class="fc" id="L41">                    exception.getMessage(),</span>
+                    &quot;UNAUTHORIZED&quot;
+            );
+        }
+
+        // ValidationException -&gt; 400
+<span class="nc bnc" id="L47" title="All 2 branches missed.">        if (exception instanceof ValidationException) {</span>
+<span class="nc" id="L48">            return buildErrorResponse(</span>
+                    Response.Status.BAD_REQUEST,
+<span class="nc" id="L50">                    exception.getMessage(),</span>
+                    &quot;VALIDATION_ERROR&quot;
+            );
+        }
+
+        // Generic Exception -&gt; 500 (LOG IL VERO ERRORE!)
+<span class="nc" id="L56">        LOGGER.severe(&quot;========== UNHANDLED EXCEPTION ==========&quot;);</span>
+<span class="nc" id="L57">        LOGGER.severe(&quot;Message: &quot; + exception.getMessage());</span>
+<span class="nc" id="L58">        LOGGER.severe(&quot;Type: &quot; + exception.getClass().getName());</span>
+<span class="nc" id="L59">        exception.printStackTrace();</span>
+<span class="nc" id="L60">        LOGGER.severe(&quot;=========================================&quot;);</span>
+
+<span class="nc" id="L62">        return buildErrorResponse(</span>
+                Response.Status.INTERNAL_SERVER_ERROR,
+<span class="nc" id="L64">                exception.getMessage(),</span>
+                &quot;INTERNAL_SERVER_ERROR&quot;
+        );
+    }
+
+    private Response buildErrorResponse(Response.Status status, String message, String errorCode) {
+<span class="fc" id="L70">        Map&lt;String, Object&gt; errorResponse = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L71">        errorResponse.put(&quot;timestamp&quot;, LocalDateTime.now().toString());</span>
+<span class="fc" id="L72">        errorResponse.put(&quot;status&quot;, status.getStatusCode());</span>
+<span class="fc" id="L73">        errorResponse.put(&quot;error&quot;, status.getReasonPhrase());</span>
+<span class="fc" id="L74">        errorResponse.put(&quot;message&quot;, message);</span>
+<span class="fc" id="L75">        errorResponse.put(&quot;errorCode&quot;, errorCode);</span>
+
+<span class="fc" id="L77">        return Response.status(status)</span>
+<span class="fc" id="L78">                .entity(errorResponse)</span>
+<span class="fc" id="L79">                .build();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

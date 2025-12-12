@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="it"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>NoteRepository.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Notes WebApp Backend</a> &gt; <a href="index.source.html" class="el_package">com.unibo.notes.repository</a> &gt; <span class="el_source">NoteRepository.java</span></div><h1>NoteRepository.java</h1><pre class="source lang-java linenums">package com.unibo.notes.repository;
+
+import com.unibo.notes.entity.Note;
+import com.unibo.notes.entity.User;
+import io.quarkus.hibernate.orm.panache.PanacheRepository;
+import jakarta.enterprise.context.ApplicationScoped;
+
+import java.util.List;
+import java.util.Optional;
+
+@ApplicationScoped
+<span class="nc" id="L12">public class NoteRepository implements PanacheRepository&lt;Note&gt; {</span>
+
+    public List&lt;Note&gt; findByOwner(User owner) {
+<span class="nc" id="L15">        return list(&quot;owner&quot;, owner);</span>
+    }
+
+    public List&lt;Note&gt; findByOwnerId(Long ownerId) {
+<span class="nc" id="L19">        return list(&quot;owner.id&quot;, ownerId);</span>
+    }
+
+    public Optional&lt;Note&gt; findByIdAndOwner(Long noteId, Long ownerId) {
+<span class="nc" id="L23">        return find(&quot;id = ?1 and owner.id = ?2&quot;, noteId, ownerId).firstResultOptional();</span>
+    }
+
+    public List&lt;Note&gt; searchByContent(String keyword, Long ownerId) {
+<span class="nc" id="L27">        return list(&quot;(lower(title) like lower(?1) or lower(content) like lower(?1)) and owner.id = ?2&quot;,</span>
+                &quot;%&quot; + keyword + &quot;%&quot;, ownerId);
+    }
+
+    public List&lt;Note&gt; findByTag(String tagName, Long ownerId) {
+<span class="nc" id="L32">        return list(&quot;select distinct n from Note n join n.tags t where lower(t.name) = lower(?1) and n.owner.id = ?2&quot;,</span>
+                tagName, ownerId);
+    }
+
+    public long countByOwner(Long ownerId) {
+<span class="nc" id="L37">        return count(&quot;owner.id&quot;, ownerId);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

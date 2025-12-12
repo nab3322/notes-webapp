@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="it"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Note.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Notes WebApp Backend</a> &gt; <a href="index.source.html" class="el_package">com.unibo.notes.entity</a> &gt; <span class="el_source">Note.java</span></div><h1>Note.java</h1><pre class="source lang-java linenums">package com.unibo.notes.entity;
+
+import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
+import jakarta.persistence.*;
+import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
+
+@Entity
+@Table(name = &quot;notes&quot;)
+<span class="nc" id="L11">public class Note extends PanacheEntityBase {</span>
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    public Long id;
+
+    @Column(nullable = false, length = 100)
+    public String title;
+
+    @Column(nullable = false, length = 280)
+    public String content;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = &quot;owner_id&quot;, nullable = false)
+    public User owner;
+
+    @Column(name = &quot;created_at&quot;, nullable = false)
+    public LocalDateTime createdAt;
+
+    @Column(name = &quot;updated_at&quot;, nullable = false)
+    public LocalDateTime updatedAt;
+
+    @Version
+    @Column(name = &quot;version&quot;)
+    public Long version;
+
+    @Column(name = &quot;last_modified_by&quot;)
+    public Long lastModifiedBy;
+
+<span class="nc" id="L40">    @OneToMany(mappedBy = &quot;note&quot;, cascade = CascadeType.ALL, orphanRemoval = true)</span>
+    public Set&lt;NotePermission&gt; permissions = new HashSet&lt;&gt;();
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = &quot;folder_id&quot;)
+    public Folder folder;
+
+    @PrePersist
+    protected void onCreate() {
+<span class="nc" id="L49">        createdAt = LocalDateTime.now();</span>
+<span class="nc" id="L50">        updatedAt = LocalDateTime.now();</span>
+<span class="nc" id="L51">    }</span>
+
+    @PreUpdate
+    protected void onUpdate() {
+<span class="nc" id="L55">        updatedAt = LocalDateTime.now();</span>
+<span class="nc" id="L56">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

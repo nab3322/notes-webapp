@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="it"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Folder.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Notes WebApp Backend</a> &gt; <a href="index.source.html" class="el_package">com.unibo.notes.entity</a> &gt; <span class="el_source">Folder.java</span></div><h1>Folder.java</h1><pre class="source lang-java linenums">package com.unibo.notes.entity;
+
+import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
+import jakarta.persistence.*;
+import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
+
+@Entity
+@Table(name = &quot;folders&quot;)
+<span class="nc" id="L11">public class Folder extends PanacheEntityBase {</span>
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    public Long id;
+
+    @Column(nullable = false, length = 100)
+    public String name;
+
+    @Column(length = 255)
+    public String description;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = &quot;owner_id&quot;, nullable = false)
+    public User owner;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = &quot;parent_id&quot;)
+    public Folder parent; // Per cartelle annidate
+
+<span class="nc" id="L31">    @OneToMany(mappedBy = &quot;parent&quot;, cascade = CascadeType.ALL)</span>
+    public Set&lt;Folder&gt; subfolders = new HashSet&lt;&gt;();
+
+<span class="nc" id="L34">    @OneToMany(mappedBy = &quot;folder&quot;, cascade = CascadeType.ALL)</span>
+    public Set&lt;Note&gt; notes = new HashSet&lt;&gt;();
+
+    @Column(name = &quot;created_at&quot;, nullable = false)
+    public LocalDateTime createdAt;
+
+<span class="nc" id="L40">    @Column(name = &quot;is_shared&quot;)</span>
+<span class="nc" id="L41">    public Boolean isShared = false;</span>
+
+    @PrePersist
+    protected void onCreate() {
+<span class="nc" id="L45">        createdAt = LocalDateTime.now();</span>
+<span class="nc" id="L46">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

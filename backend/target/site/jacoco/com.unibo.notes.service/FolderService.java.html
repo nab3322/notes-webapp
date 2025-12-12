@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="it"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FolderService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Notes WebApp Backend</a> &gt; <a href="index.source.html" class="el_package">com.unibo.notes.service</a> &gt; <span class="el_source">FolderService.java</span></div><h1>FolderService.java</h1><pre class="source lang-java linenums">package com.unibo.notes.service;
+
+import com.unibo.notes.entity.Folder;
+import com.unibo.notes.entity.User;
+import com.unibo.notes.exception.ConflictException;
+import com.unibo.notes.exception.ResourceNotFoundException;
+import com.unibo.notes.exception.ValidationException;
+import com.unibo.notes.repository.FolderRepository;
+import com.unibo.notes.repository.NoteRepository;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
+
+import java.util.List;
+
+@ApplicationScoped
+<span class="nc" id="L17">public class FolderService {</span>
+
+    @Inject
+    FolderRepository folderRepository;
+
+    @Inject
+    NoteRepository noteRepository;
+
+    @Inject
+    UserService userService;
+
+    public List&lt;Folder&gt; getRootFolders(Long userId) {
+<span class="nc" id="L29">        return folderRepository.findRootFoldersByOwnerId(userId);</span>
+    }
+
+    public List&lt;Folder&gt; getSubfolders(Long parentId, Long userId) {
+        // Verifica che parent esista e appartenga all'utente
+<span class="nc" id="L34">        Folder parent = folderRepository.findByIdAndOwner(parentId, userId)</span>
+<span class="nc" id="L35">                .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;Folder&quot;, &quot;id&quot;, parentId));</span>
+
+<span class="nc" id="L37">        return folderRepository.findSubfolders(parentId);</span>
+    }
+
+    public Folder getFolderById(Long folderId, Long userId) {
+<span class="nc" id="L41">        return folderRepository.findByIdAndOwner(folderId, userId)</span>
+<span class="nc" id="L42">                .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;Folder&quot;, &quot;id&quot;, folderId));</span>
+    }
+
+    @Transactional
+    public Folder createFolder(String name, String description, Long parentId, Long userId) {
+        // Validazione
+<span class="nc bnc" id="L48" title="All 4 branches missed.">        if (name == null || name.trim().isEmpty()) {</span>
+<span class="nc" id="L49">            throw new ValidationException(&quot;Folder name is required&quot;);</span>
+        }
+<span class="nc bnc" id="L51" title="All 2 branches missed.">        if (name.length() &gt; 100) {</span>
+<span class="nc" id="L52">            throw new ValidationException(&quot;Folder name must be less than 100 characters&quot;);</span>
+        }
+
+        // Verifica duplicati
+<span class="nc bnc" id="L56" title="All 2 branches missed.">        if (folderRepository.existsByNameAndOwner(name, userId)) {</span>
+<span class="nc" id="L57">            throw new ConflictException(&quot;A folder with this name already exists&quot;);</span>
+        }
+
+        // Crea cartella
+<span class="nc" id="L61">        Folder folder = new Folder();</span>
+<span class="nc" id="L62">        folder.name = name.trim();</span>
+<span class="nc" id="L63">        folder.description = description;</span>
+<span class="nc" id="L64">        folder.owner = userService.findById(userId);</span>
+<span class="nc" id="L65">        folder.isShared = false;</span>
+
+        // Se ha un parent, verifica che esista e appartenga all'utente
+<span class="nc bnc" id="L68" title="All 2 branches missed.">        if (parentId != null) {</span>
+<span class="nc" id="L69">            Folder parent = folderRepository.findByIdAndOwner(parentId, userId)</span>
+<span class="nc" id="L70">                    .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;Parent folder&quot;, &quot;id&quot;, parentId));</span>
+<span class="nc" id="L71">            folder.parent = parent;</span>
+        }
+
+<span class="nc" id="L74">        folderRepository.persist(folder);</span>
+<span class="nc" id="L75">        return folder;</span>
+    }
+
+    @Transactional
+    public Folder updateFolder(Long folderId, String name, String description, Long userId) {
+<span class="nc" id="L80">        Folder folder = getFolderById(folderId, userId);</span>
+
+<span class="nc bnc" id="L82" title="All 4 branches missed.">        if (name != null &amp;&amp; !name.trim().isEmpty()) {</span>
+<span class="nc bnc" id="L83" title="All 4 branches missed.">            if (!name.equals(folder.name) &amp;&amp; folderRepository.existsByNameAndOwner(name, userId)) {</span>
+<span class="nc" id="L84">                throw new ConflictException(&quot;A folder with this name already exists&quot;);</span>
+            }
+<span class="nc" id="L86">            folder.name = name.trim();</span>
+        }
+
+<span class="nc bnc" id="L89" title="All 2 branches missed.">        if (description != null) {</span>
+<span class="nc" id="L90">            folder.description = description;</span>
+        }
+
+<span class="nc" id="L93">        folderRepository.persist(folder);</span>
+<span class="nc" id="L94">        return folder;</span>
+    }
+
+    @Transactional
+    public void deleteFolder(Long folderId, Long userId) {
+<span class="nc" id="L99">        Folder folder = getFolderById(folderId, userId);</span>
+
+        // Verifica che non ci siano note dentro
+<span class="nc" id="L102">        long notesCount = folderRepository.countNotesByFolder(folderId);</span>
+<span class="nc bnc" id="L103" title="All 2 branches missed.">        if (notesCount &gt; 0) {</span>
+<span class="nc" id="L104">            throw new ConflictException(&quot;Cannot delete folder with notes. Move or delete notes first.&quot;);</span>
+        }
+
+        // Verifica che non ci siano sottocartelle
+<span class="nc bnc" id="L108" title="All 2 branches missed.">        if (!folder.subfolders.isEmpty()) {</span>
+<span class="nc" id="L109">            throw new ConflictException(&quot;Cannot delete folder with subfolders. Delete subfolders first.&quot;);</span>
+        }
+
+<span class="nc" id="L112">        folderRepository.delete(folder);</span>
+<span class="nc" id="L113">    }</span>
+
+    public long countNotesByFolder(Long folderId, Long userId) {
+        // Verifica che l'utente abbia accesso alla cartella
+<span class="nc" id="L117">        getFolderById(folderId, userId);</span>
+
+        // Conta solo le note dell'utente in questa cartella
+<span class="nc" id="L120">        return noteRepository.count(&quot;folder.id = ?1 and owner.id = ?2&quot;, folderId, userId);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

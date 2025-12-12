@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="it"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>NoteService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Notes WebApp Backend</a> &gt; <a href="index.source.html" class="el_package">com.unibo.notes.service</a> &gt; <span class="el_source">NoteService.java</span></div><h1>NoteService.java</h1><pre class="source lang-java linenums">package com.unibo.notes.service;
+
+import com.unibo.notes.entity.User;
+import com.unibo.notes.dto.CreateNoteRequest;
+import com.unibo.notes.dto.UpdateNoteRequest;
+import com.unibo.notes.entity.Folder;
+import com.unibo.notes.entity.Note;
+import com.unibo.notes.entity.NoteVersion;
+import com.unibo.notes.exception.ConflictException;
+import com.unibo.notes.exception.ResourceNotFoundException;
+import com.unibo.notes.exception.UnauthorizedException;
+import com.unibo.notes.exception.ValidationException;
+import com.unibo.notes.repository.FolderRepository;
+import com.unibo.notes.repository.NoteRepository;
+import com.unibo.notes.repository.NoteVersionRepository;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
+
+import java.util.List;
+
+@ApplicationScoped
+<span class="nc" id="L23">public class NoteService {</span>
+
+    @Inject
+    NoteRepository noteRepository;
+
+    @Inject
+    FolderRepository folderRepository;
+
+    @Inject
+    NoteVersionRepository versionRepository;
+
+    @Inject
+    UserService userService;
+
+    @Inject
+    PermissionService permissionService;
+
+    public List&lt;Note&gt; getAllNotesByUser(Long userId) {
+<span class="nc" id="L41">        return noteRepository.findByOwnerId(userId);</span>
+    }
+
+    public List&lt;Note&gt; getNotesByFolder(Long folderId, Long userId) {
+        // Verifica che la cartella appartenga all'utente
+<span class="nc" id="L46">        Folder folder = folderRepository.findByIdAndOwner(folderId, userId)</span>
+<span class="nc" id="L47">                .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;Folder&quot;, &quot;id&quot;, folderId));</span>
+
+<span class="nc" id="L49">        return noteRepository.list(&quot;folder.id = ?1 and owner.id = ?2&quot;, folderId, userId);</span>
+    }
+
+    public Note getNoteById(Long noteId, Long userId) {
+<span class="nc" id="L53">        Note note = noteRepository.findByIdOptional(noteId)</span>
+<span class="nc" id="L54">                .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;Note&quot;, &quot;id&quot;, noteId));</span>
+
+        // Verifica permessi: proprietario o ha permessi di lettura
+<span class="nc bnc" id="L57" title="All 4 branches missed.">        if (!note.owner.id.equals(userId) &amp;&amp; !permissionService.hasReadPermission(noteId, userId)) {</span>
+<span class="nc" id="L58">            throw new UnauthorizedException(&quot;You don't have permission to access this note&quot;);</span>
+        }
+
+<span class="nc" id="L61">        return note;</span>
+    }
+
+    @Transactional
+    public Note createNote(CreateNoteRequest request, Long userId) {
+        // Validazione
+<span class="nc bnc" id="L67" title="All 4 branches missed.">        if (request.title == null || request.title.trim().isEmpty()) {</span>
+<span class="nc" id="L68">            throw new ValidationException(&quot;Title is required&quot;);</span>
+        }
+<span class="nc bnc" id="L70" title="All 4 branches missed.">        if (request.content == null || request.content.trim().isEmpty()) {</span>
+<span class="nc" id="L71">            throw new ValidationException(&quot;Content is required&quot;);</span>
+        }
+<span class="nc bnc" id="L73" title="All 2 branches missed.">        if (request.content.length() &gt; 280) {</span>
+<span class="nc" id="L74">            throw new ValidationException(&quot;Content must be less than 280 characters&quot;);</span>
+        }
+
+        // Crea nota
+<span class="nc" id="L78">        Note note = new Note();</span>
+<span class="nc" id="L79">        note.title = request.title.trim();</span>
+<span class="nc" id="L80">        note.content = request.content.trim();</span>
+<span class="nc" id="L81">        note.owner = userService.findById(userId);</span>
+<span class="nc" id="L82">        note.lastModifiedBy = userId;</span>
+
+<span class="nc" id="L84">        noteRepository.persist(note);</span>
+
+        // Crea prima versione
+<span class="nc" id="L87">        saveVersion(note, userId);</span>
+
+<span class="nc" id="L89">        return note;</span>
+    }
+
+    @Transactional
+    public Note updateNote(Long noteId, UpdateNoteRequest request, Long userId) {
+<span class="nc" id="L94">        Note note = noteRepository.findByIdOptional(noteId)</span>
+<span class="nc" id="L95">                .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;Note&quot;, &quot;id&quot;, noteId));</span>
+
+        // Verifica permessi: proprietario o ha permessi di scrittura
+<span class="nc bnc" id="L98" title="All 4 branches missed.">        if (!note.owner.id.equals(userId) &amp;&amp; !permissionService.hasWritePermission(noteId, userId)) {</span>
+<span class="nc" id="L99">            throw new UnauthorizedException(&quot;You don't have permission to edit this note&quot;);</span>
+        }
+
+        // Gestione conflitti ottimistici
+<span class="nc bnc" id="L103" title="All 4 branches missed.">        if (request.expectedVersion != null &amp;&amp; !note.version.equals(request.expectedVersion)) {</span>
+<span class="nc" id="L104">            throw new ConflictException(&quot;Note has been modified by another user. Current version: &quot; + note.version);</span>
+        }
+
+        // Aggiorna campi
+<span class="nc bnc" id="L108" title="All 4 branches missed.">        if (request.title != null &amp;&amp; !request.title.trim().isEmpty()) {</span>
+<span class="nc" id="L109">            note.title = request.title.trim();</span>
+        }
+<span class="nc bnc" id="L111" title="All 2 branches missed.">        if (request.content != null) {</span>
+<span class="nc bnc" id="L112" title="All 2 branches missed.">            if (request.content.length() &gt; 280) {</span>
+<span class="nc" id="L113">                throw new ValidationException(&quot;Content must be less than 280 characters&quot;);</span>
+            }
+<span class="nc" id="L115">            note.content = request.content.trim();</span>
+        }
+
+<span class="nc" id="L118">        note.lastModifiedBy = userId;</span>
+<span class="nc" id="L119">        noteRepository.persist(note);</span>
+
+        // Salva nuova versione
+<span class="nc" id="L122">        saveVersion(note, userId);</span>
+
+<span class="nc" id="L124">        return note;</span>
+    }
+
+    @Transactional
+    public void deleteNote(Long noteId, Long userId) {
+<span class="nc" id="L129">        Note note = noteRepository.findByIdOptional(noteId)</span>
+<span class="nc" id="L130">                .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;Note&quot;, &quot;id&quot;, noteId));</span>
+
+        // Solo il proprietario può eliminare
+<span class="nc bnc" id="L133" title="All 2 branches missed.">        if (!note.owner.id.equals(userId)) {</span>
+<span class="nc" id="L134">            throw new UnauthorizedException(&quot;Only the owner can delete this note&quot;);</span>
+        }
+
+<span class="nc" id="L137">        noteRepository.delete(note);</span>
+<span class="nc" id="L138">    }</span>
+
+    @Transactional
+    public Note moveNoteToFolder(Long noteId, Long folderId, Long userId) {
+<span class="nc" id="L142">        Note note = getNoteById(noteId, userId);</span>
+
+        // Verifica che sia il proprietario
+<span class="nc bnc" id="L145" title="All 2 branches missed.">        if (!note.owner.id.equals(userId)) {</span>
+<span class="nc" id="L146">            throw new UnauthorizedException(&quot;Only the owner can move this note&quot;);</span>
+        }
+
+<span class="nc bnc" id="L149" title="All 2 branches missed.">        if (folderId != null) {</span>
+<span class="nc" id="L150">            Folder folder = folderRepository.findByIdAndOwner(folderId, userId)</span>
+<span class="nc" id="L151">                    .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;Folder&quot;, &quot;id&quot;, folderId));</span>
+<span class="nc" id="L152">            note.folder = folder;</span>
+<span class="nc" id="L153">        } else {</span>
+<span class="nc" id="L154">            note.folder = null; // Rimuovi dalla cartella</span>
+        }
+
+<span class="nc" id="L157">        noteRepository.persist(note);</span>
+<span class="nc" id="L158">        return note;</span>
+    }
+
+    @Transactional
+    public Note copyNote(Long noteId, Long userId) {
+        // Recupera la nota originale e verifica permessi
+<span class="nc" id="L164">        Note original = getNoteById(noteId, userId);</span>
+
+        // Recupera l'utente proprietario della copia
+<span class="nc" id="L167">        var owner = userService.findById(userId);</span>
+<span class="nc bnc" id="L168" title="All 2 branches missed.">        if (owner == null) {</span>
+<span class="nc" id="L169">            throw new ResourceNotFoundException(&quot;User&quot;, &quot;id&quot;, userId);</span>
+        }
+
+        // Crea la copia della nota
+<span class="nc" id="L173">        Note copy = new Note();</span>
+<span class="nc" id="L174">        copy.title = original.title + &quot; (Copy)&quot;;</span>
+<span class="nc" id="L175">        copy.content = original.content;</span>
+<span class="nc" id="L176">        copy.owner = owner;          // assegna l’utente corretto</span>
+<span class="nc" id="L177">        copy.folder = original.folder; // mantiene la cartella, se presente</span>
+<span class="nc" id="L178">        copy.lastModifiedBy = userId;</span>
+
+        // Persiste la copia e forza l’assegnazione dell’ID
+<span class="nc" id="L181">        noteRepository.persistAndFlush(copy);</span>
+
+        // Salva la prima versione della copia
+<span class="nc" id="L184">        saveVersion(copy, userId);</span>
+
+<span class="nc" id="L186">        return copy;</span>
+    }
+
+
+
+
+
+
+
+    public List&lt;Note&gt; searchNotes(String keyword, Long userId) {
+<span class="nc" id="L196">        return noteRepository.searchByContent(keyword, userId);</span>
+    }
+
+    private void saveVersion(Note note, Long userId) {
+<span class="nc" id="L200">        NoteVersion version = new NoteVersion();</span>
+<span class="nc" id="L201">        version.noteId = note.id;</span>
+<span class="nc" id="L202">        version.content = note.content;</span>
+<span class="nc" id="L203">        version.versionNumber = versionRepository.getNextVersionNumber(note.id);</span>
+<span class="nc" id="L204">        version.modifiedBy = userId;</span>
+
+<span class="nc" id="L206">        versionRepository.persist(version);</span>
+<span class="nc" id="L207">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

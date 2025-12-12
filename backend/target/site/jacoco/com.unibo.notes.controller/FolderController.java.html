@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="it"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FolderController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Notes WebApp Backend</a> &gt; <a href="index.source.html" class="el_package">com.unibo.notes.controller</a> &gt; <span class="el_source">FolderController.java</span></div><h1>FolderController.java</h1><pre class="source lang-java linenums">package com.unibo.notes.controller;
+
+import com.unibo.notes.entity.Folder;
+import com.unibo.notes.service.FolderService;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.SecurityContext;
+
+import java.util.List;
+
+@Path(&quot;/api/folders&quot;)
+@Produces(MediaType.APPLICATION_JSON)
+@Consumes(MediaType.APPLICATION_JSON)
+<span class="nc" id="L17">public class FolderController {</span>
+
+    @Inject
+    FolderService folderService;
+
+    @GET
+    public Response getRootFolders(@Context SecurityContext securityContext) {
+<span class="nc" id="L24">        Long userId = Long.parseLong(securityContext.getUserPrincipal().getName());</span>
+<span class="nc" id="L25">        List&lt;Folder&gt; folders = folderService.getRootFolders(userId);</span>
+<span class="nc" id="L26">        return Response.ok(folders).build();</span>
+    }
+
+    @GET
+    @Path(&quot;/{folderId}&quot;)
+    public Response getFolderById(@PathParam(&quot;folderId&quot;) Long folderId,
+                                  @Context SecurityContext securityContext) {
+<span class="nc" id="L33">        Long userId = Long.parseLong(securityContext.getUserPrincipal().getName());</span>
+<span class="nc" id="L34">        Folder folder = folderService.getFolderById(folderId, userId);</span>
+<span class="nc" id="L35">        return Response.ok(folder).build();</span>
+    }
+
+    @GET
+    @Path(&quot;/{folderId}/subfolders&quot;)
+    public Response getSubfolders(@PathParam(&quot;folderId&quot;) Long folderId,
+                                  @Context SecurityContext securityContext) {
+<span class="nc" id="L42">        Long userId = Long.parseLong(securityContext.getUserPrincipal().getName());</span>
+<span class="nc" id="L43">        List&lt;Folder&gt; subfolders = folderService.getSubfolders(folderId, userId);</span>
+<span class="nc" id="L44">        return Response.ok(subfolders).build();</span>
+    }
+
+    @POST
+    public Response createFolder(CreateFolderRequest request,
+                                 @Context SecurityContext securityContext) {
+<span class="nc" id="L50">        Long userId = Long.parseLong(securityContext.getUserPrincipal().getName());</span>
+<span class="nc" id="L51">        Folder folder = folderService.createFolder(</span>
+                request.name,
+                request.description,
+                request.parentId,
+                userId
+        );
+<span class="nc" id="L57">        return Response.status(Response.Status.CREATED).entity(folder).build();</span>
+    }
+
+    @PUT
+    @Path(&quot;/{folderId}&quot;)
+    public Response updateFolder(@PathParam(&quot;folderId&quot;) Long folderId,
+                                 UpdateFolderRequest request,
+                                 @Context SecurityContext securityContext) {
+<span class="nc" id="L65">        Long userId = Long.parseLong(securityContext.getUserPrincipal().getName());</span>
+<span class="nc" id="L66">        Folder folder = folderService.updateFolder(folderId, request.name, request.description, userId);</span>
+<span class="nc" id="L67">        return Response.ok(folder).build();</span>
+    }
+
+    @DELETE
+    @Path(&quot;/{folderId}&quot;)
+    public Response deleteFolder(@PathParam(&quot;folderId&quot;) Long folderId,
+                                 @Context SecurityContext securityContext) {
+<span class="nc" id="L74">        Long userId = Long.parseLong(securityContext.getUserPrincipal().getName());</span>
+<span class="nc" id="L75">        folderService.deleteFolder(folderId, userId);</span>
+<span class="nc" id="L76">        return Response.noContent().build();</span>
+    }
+
+    @GET
+    @Path(&quot;/{folderId}/notes/count&quot;)
+    public Response countNotes(@PathParam(&quot;folderId&quot;) Long folderId,
+                               @Context SecurityContext securityContext) {
+<span class="nc" id="L83">        Long userId = Long.parseLong(securityContext.getUserPrincipal().getName());</span>
+<span class="nc" id="L84">        long count = folderService.countNotesByFolder(folderId, userId);</span>
+<span class="nc" id="L85">        return Response.ok(new CountResponse(count)).build();</span>
+    }
+
+    // DTO interni per request/response
+<span class="nc" id="L89">    public static class CreateFolderRequest {</span>
+        public String name;
+        public String description;
+        public Long parentId;
+    }
+
+<span class="nc" id="L95">    public static class UpdateFolderRequest {</span>
+        public String name;
+        public String description;
+    }
+
+    public static class CountResponse {
+        public long count;
+<span class="nc" id="L102">        public CountResponse(long count) {</span>
+<span class="nc" id="L103">            this.count = count;</span>
+<span class="nc" id="L104">        }</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

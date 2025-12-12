@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="it"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>NoteVersionRepository.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Notes WebApp Backend</a> &gt; <a href="index.source.html" class="el_package">com.unibo.notes.repository</a> &gt; <span class="el_source">NoteVersionRepository.java</span></div><h1>NoteVersionRepository.java</h1><pre class="source lang-java linenums">package com.unibo.notes.repository;
+
+import com.unibo.notes.entity.NoteVersion;
+import io.quarkus.hibernate.orm.panache.PanacheRepository;
+import io.quarkus.panache.common.Sort;
+import jakarta.enterprise.context.ApplicationScoped;
+
+import java.util.List;
+import java.util.Optional;
+
+@ApplicationScoped
+<span class="nc" id="L12">public class NoteVersionRepository implements PanacheRepository&lt;NoteVersion&gt; {</span>
+
+    public List&lt;NoteVersion&gt; findByNoteId(Long noteId) {
+<span class="nc" id="L15">        return list(&quot;noteId = ?1 order by versionNumber desc&quot;, noteId);</span>
+    }
+
+    public Optional&lt;NoteVersion&gt; findByNoteIdAndVersionNumber(Long noteId, Long versionNumber) {
+<span class="nc" id="L19">        return find(&quot;noteId = ?1 and versionNumber = ?2&quot;, noteId, versionNumber).firstResultOptional();</span>
+    }
+
+    public Optional&lt;NoteVersion&gt; findLatestVersion(Long noteId) {
+<span class="nc" id="L23">        return find(&quot;noteId = ?1 order by versionNumber desc&quot;, noteId).firstResultOptional();</span>
+    }
+
+    public long getNextVersionNumber(Long noteId) {
+<span class="nc" id="L27">        NoteVersion latest = find(&quot;noteId = ?1&quot;, Sort.by(&quot;versionNumber&quot;, Sort.Direction.Descending), noteId)</span>
+<span class="nc" id="L28">                .firstResult();</span>
+<span class="nc bnc" id="L29" title="All 2 branches missed.">        return (latest != null) ? latest.versionNumber + 1 : 1L;</span>
+    }
+
+    public long countByNoteId(Long noteId) {
+<span class="nc" id="L33">        return count(&quot;noteId = ?1&quot;, noteId);</span>
+    }
+
+    public void deleteOldVersions(Long noteId, int keepLast) {
+<span class="nc" id="L37">        List&lt;NoteVersion&gt; versions = findByNoteId(noteId);</span>
+<span class="nc bnc" id="L38" title="All 2 branches missed.">        if (versions.size() &gt; keepLast) {</span>
+            // Keep only the last N versions
+<span class="nc" id="L40">            List&lt;NoteVersion&gt; toDelete = versions.subList(keepLast, versions.size());</span>
+<span class="nc" id="L41">            delete(&quot;id in ?1&quot;, toDelete.stream().map(v -&gt; v.id).toList());</span>
+        }
+<span class="nc" id="L43">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="it"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>VersionService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Notes WebApp Backend</a> &gt; <a href="index.source.html" class="el_package">com.unibo.notes.service</a> &gt; <span class="el_source">VersionService.java</span></div><h1>VersionService.java</h1><pre class="source lang-java linenums">package com.unibo.notes.service;
+
+import com.unibo.notes.dto.NoteVersionDTO;
+import com.unibo.notes.entity.Note;
+import com.unibo.notes.entity.NoteVersion;
+import com.unibo.notes.exception.ResourceNotFoundException;
+import com.unibo.notes.exception.UnauthorizedException;
+import com.unibo.notes.repository.NoteRepository;
+import com.unibo.notes.repository.NoteVersionRepository;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+@ApplicationScoped
+<span class="nc" id="L18">public class VersionService {</span>
+
+    @Inject
+    NoteVersionRepository versionRepository;
+
+    @Inject
+    NoteRepository noteRepository;
+
+    @Inject
+    PermissionService permissionService;
+
+    @Inject
+    UserService userService;
+
+    public List&lt;NoteVersionDTO&gt; getNoteVersions(Long noteId, Long userId) {
+        // Verifica che l'utente abbia accesso alla nota
+<span class="nc" id="L34">        Note note = noteRepository.findByIdOptional(noteId)</span>
+<span class="nc" id="L35">                .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;Note&quot;, &quot;id&quot;, noteId));</span>
+
+<span class="nc bnc" id="L37" title="All 4 branches missed.">        if (!note.owner.id.equals(userId) &amp;&amp; !permissionService.hasReadPermission(noteId, userId)) {</span>
+<span class="nc" id="L38">            throw new UnauthorizedException(&quot;You don't have permission to view versions of this note&quot;);</span>
+        }
+
+<span class="nc" id="L41">        List&lt;NoteVersion&gt; versions = versionRepository.findByNoteId(noteId);</span>
+<span class="nc" id="L42">        return versions.stream()</span>
+<span class="nc" id="L43">                .map(this::toDTO)</span>
+<span class="nc" id="L44">                .collect(Collectors.toList());</span>
+    }
+
+    public NoteVersionDTO getSpecificVersion(Long noteId, Long versionNumber, Long userId) {
+        // Verifica permessi
+<span class="nc" id="L49">        Note note = noteRepository.findByIdOptional(noteId)</span>
+<span class="nc" id="L50">                .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;Note&quot;, &quot;id&quot;, noteId));</span>
+
+<span class="nc bnc" id="L52" title="All 4 branches missed.">        if (!note.owner.id.equals(userId) &amp;&amp; !permissionService.hasReadPermission(noteId, userId)) {</span>
+<span class="nc" id="L53">            throw new UnauthorizedException(&quot;You don't have permission to view this note&quot;);</span>
+        }
+
+<span class="nc" id="L56">        NoteVersion version = versionRepository.findByNoteIdAndVersionNumber(noteId, versionNumber)</span>
+<span class="nc" id="L57">                .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;Version &quot; + versionNumber + &quot; not found for note &quot; + noteId));</span>
+
+<span class="nc" id="L59">        return toDTO(version);</span>
+    }
+
+    @Transactional
+    public Note restoreVersion(Long noteId, Long versionNumber, Long userId) {
+        // Verifica che l'utente abbia permessi di scrittura
+<span class="nc" id="L65">        Note note = noteRepository.findByIdOptional(noteId)</span>
+<span class="nc" id="L66">                .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;Note&quot;, &quot;id&quot;, noteId));</span>
+
+<span class="nc bnc" id="L68" title="All 4 branches missed.">        if (!note.owner.id.equals(userId) &amp;&amp; !permissionService.hasWritePermission(noteId, userId)) {</span>
+<span class="nc" id="L69">            throw new UnauthorizedException(&quot;You don't have permission to restore versions of this note&quot;);</span>
+        }
+
+        // Trova la versione da ripristinare
+<span class="nc" id="L73">        NoteVersion versionToRestore = versionRepository.findByNoteIdAndVersionNumber(noteId, versionNumber)</span>
+<span class="nc" id="L74">                .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;Version &quot; + versionNumber + &quot; not found&quot;));</span>
+
+        // Ripristina il contenuto
+<span class="nc" id="L77">        note.content = versionToRestore.content;</span>
+<span class="nc" id="L78">        note.lastModifiedBy = userId;</span>
+<span class="nc" id="L79">        noteRepository.persist(note);</span>
+
+        // Crea una nuova versione per il ripristino
+<span class="nc" id="L82">        NoteVersion newVersion = new NoteVersion();</span>
+<span class="nc" id="L83">        newVersion.noteId = note.id;</span>
+<span class="nc" id="L84">        newVersion.content = note.content;</span>
+<span class="nc" id="L85">        newVersion.versionNumber = versionRepository.getNextVersionNumber(note.id);</span>
+<span class="nc" id="L86">        newVersion.modifiedBy = userId;</span>
+<span class="nc" id="L87">        versionRepository.persist(newVersion);</span>
+
+<span class="nc" id="L89">        return note;</span>
+    }
+
+    @Transactional
+    public void deleteOldVersions(Long noteId, int keepLast, Long userId) {
+        // Solo il proprietario può eliminare versioni
+<span class="nc" id="L95">        Note note = noteRepository.findByIdAndOwner(noteId, userId)</span>
+<span class="nc" id="L96">                .orElseThrow(() -&gt; new UnauthorizedException(&quot;Only the owner can delete versions&quot;));</span>
+
+<span class="nc" id="L98">        versionRepository.deleteOldVersions(noteId, keepLast);</span>
+<span class="nc" id="L99">    }</span>
+
+    public long getVersionCount(Long noteId, Long userId) {
+        // Verifica permessi
+<span class="nc" id="L103">        Note note = noteRepository.findByIdOptional(noteId)</span>
+<span class="nc" id="L104">                .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;Note&quot;, &quot;id&quot;, noteId));</span>
+
+<span class="nc bnc" id="L106" title="All 4 branches missed.">        if (!note.owner.id.equals(userId) &amp;&amp; !permissionService.hasReadPermission(noteId, userId)) {</span>
+<span class="nc" id="L107">            throw new UnauthorizedException(&quot;You don't have permission to view this note&quot;);</span>
+        }
+
+<span class="nc" id="L110">        return versionRepository.countByNoteId(noteId);</span>
+    }
+
+    private NoteVersionDTO toDTO(NoteVersion version) {
+<span class="nc" id="L114">        NoteVersionDTO dto = new NoteVersionDTO();</span>
+<span class="nc" id="L115">        dto.id = version.id;</span>
+<span class="nc" id="L116">        dto.noteId = version.noteId;</span>
+<span class="nc" id="L117">        dto.content = version.content;</span>
+<span class="nc" id="L118">        dto.versionNumber = version.versionNumber;</span>
+<span class="nc" id="L119">        dto.modifiedAt = version.modifiedAt;</span>
+
+        // Trova username di chi ha modificato
+        try {
+<span class="nc" id="L123">            dto.modifiedByUsername = userService.findById(version.modifiedBy).username;</span>
+<span class="nc" id="L124">        } catch (Exception e) {</span>
+<span class="nc" id="L125">            dto.modifiedByUsername = &quot;Unknown&quot;;</span>
+<span class="nc" id="L126">        }</span>
+
+<span class="nc" id="L128">        return dto;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

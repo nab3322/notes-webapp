@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="it"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FolderRepository.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Notes WebApp Backend</a> &gt; <a href="index.source.html" class="el_package">com.unibo.notes.repository</a> &gt; <span class="el_source">FolderRepository.java</span></div><h1>FolderRepository.java</h1><pre class="source lang-java linenums">package com.unibo.notes.repository;
+
+import com.unibo.notes.entity.Folder;
+import com.unibo.notes.entity.User;
+import io.quarkus.hibernate.orm.panache.PanacheRepository;
+import jakarta.enterprise.context.ApplicationScoped;
+
+import java.util.List;
+import java.util.Optional;
+
+@ApplicationScoped
+<span class="nc" id="L12">public class FolderRepository implements PanacheRepository&lt;Folder&gt; {</span>
+
+    public List&lt;Folder&gt; findByOwner(User owner) {
+<span class="nc" id="L15">        return list(&quot;owner&quot;, owner);</span>
+    }
+
+    public List&lt;Folder&gt; findByOwnerId(Long ownerId) {
+<span class="nc" id="L19">        return list(&quot;owner.id&quot;, ownerId);</span>
+    }
+
+    public List&lt;Folder&gt; findRootFoldersByOwnerId(Long ownerId) {
+<span class="nc" id="L23">        return list(&quot;owner.id = ?1 and parent is null&quot;, ownerId);</span>
+    }
+
+    public List&lt;Folder&gt; findSubfolders(Long parentId) {
+<span class="nc" id="L27">        return list(&quot;parent.id&quot;, parentId);</span>
+    }
+
+    public Optional&lt;Folder&gt; findByIdAndOwner(Long folderId, Long ownerId) {
+<span class="nc" id="L31">        return find(&quot;id = ?1 and owner.id = ?2&quot;, folderId, ownerId).firstResultOptional();</span>
+    }
+
+    public Optional&lt;Folder&gt; findByNameAndOwner(String name, Long ownerId) {
+<span class="nc" id="L35">        return find(&quot;lower(name) = lower(?1) and owner.id = ?2&quot;, name, ownerId).firstResultOptional();</span>
+    }
+
+    public long countByOwner(Long ownerId) {
+<span class="nc" id="L39">        return count(&quot;owner.id&quot;, ownerId);</span>
+    }
+
+    public long countNotesByFolder(Long folderId) {
+<span class="nc" id="L43">        return getEntityManager()</span>
+<span class="nc" id="L44">                .createQuery(&quot;SELECT COUNT(n) FROM Note n WHERE n.folder.id = :folderId&quot;, Long.class)</span>
+<span class="nc" id="L45">                .setParameter(&quot;folderId&quot;, folderId)</span>
+<span class="nc" id="L46">                .getSingleResult();</span>
+    }
+
+    public boolean existsByNameAndOwner(String name, Long ownerId) {
+<span class="nc bnc" id="L50" title="All 2 branches missed.">        return count(&quot;lower(name) = lower(?1) and owner.id = ?2&quot;, name, ownerId) &gt; 0;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

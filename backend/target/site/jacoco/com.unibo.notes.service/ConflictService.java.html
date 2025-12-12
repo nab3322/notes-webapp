@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="it"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ConflictService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Notes WebApp Backend</a> &gt; <a href="index.source.html" class="el_package">com.unibo.notes.service</a> &gt; <span class="el_source">ConflictService.java</span></div><h1>ConflictService.java</h1><pre class="source lang-java linenums">package com.unibo.notes.service;
+
+import com.unibo.notes.dto.ConflictDTO;
+import com.unibo.notes.entity.Note;
+import com.unibo.notes.entity.NoteVersion;
+import com.unibo.notes.exception.ConflictException;
+import com.unibo.notes.exception.ResourceNotFoundException;
+import com.unibo.notes.exception.UnauthorizedException;
+import com.unibo.notes.repository.NoteRepository;
+import com.unibo.notes.repository.NoteVersionRepository;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
+
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.Optional;
+
+@ApplicationScoped
+<span class="nc" id="L20">public class ConflictService {</span>
+
+    @Inject
+    NoteRepository noteRepository;
+
+    @Inject
+    NoteVersionRepository versionRepository;
+
+    @Inject
+    PermissionService permissionService;
+
+    @Inject
+    UserService userService;
+
+    /**
+     * Rileva se c'è un conflitto prima di salvare
+     */
+    public ConflictDTO detectConflict(Long noteId, Long expectedVersion, String newContent, Long userId) {
+<span class="nc" id="L38">        Note note = noteRepository.findByIdOptional(noteId)</span>
+<span class="nc" id="L39">                .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;Note&quot;, &quot;id&quot;, noteId));</span>
+
+        // Verifica permessi
+<span class="nc bnc" id="L42" title="All 4 branches missed.">        if (!note.owner.id.equals(userId) &amp;&amp; !permissionService.hasWritePermission(noteId, userId)) {</span>
+<span class="nc" id="L43">            throw new UnauthorizedException(&quot;You don't have permission to edit this note&quot;);</span>
+        }
+
+        // Nessun conflitto se le versioni coincidono
+<span class="nc bnc" id="L47" title="All 2 branches missed.">        if (note.version.equals(expectedVersion)) {</span>
+<span class="nc" id="L48">            return null;</span>
+        }
+
+        // CONFLITTO RILEVATO!
+<span class="nc" id="L52">        ConflictDTO conflict = new ConflictDTO();</span>
+<span class="nc" id="L53">        conflict.noteId = noteId;</span>
+<span class="nc" id="L54">        conflict.noteTitle = note.title;</span>
+<span class="nc" id="L55">        conflict.currentVersion = note.version;</span>
+<span class="nc" id="L56">        conflict.attemptedVersion = expectedVersion;</span>
+<span class="nc" id="L57">        conflict.currentContent = note.content;</span>
+<span class="nc" id="L58">        conflict.attemptedContent = newContent;</span>
+<span class="nc" id="L59">        conflict.lastModifiedAt = note.updatedAt;</span>
+
+        // Trova chi ha modificato per ultimo
+        try {
+<span class="nc" id="L63">            conflict.lastModifiedBy = userService.findById(note.lastModifiedBy).username;</span>
+<span class="nc" id="L64">        } catch (Exception e) {</span>
+<span class="nc" id="L65">            conflict.lastModifiedBy = &quot;Unknown&quot;;</span>
+<span class="nc" id="L66">        }</span>
+
+        // Determina il tipo di conflitto
+<span class="nc" id="L69">        conflict.conflictType = determineConflictType(note, expectedVersion);</span>
+
+<span class="nc" id="L71">        return conflict;</span>
+    }
+
+    /**
+     * Risolve un conflitto accettando una delle due versioni
+     */
+    @Transactional
+    public Note resolveConflict(Long noteId, Long userId, String resolution, String resolvedContent) {
+<span class="nc" id="L79">        Note note = noteRepository.findByIdOptional(noteId)</span>
+<span class="nc" id="L80">                .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;Note&quot;, &quot;id&quot;, noteId));</span>
+
+        // Verifica permessi
+<span class="nc bnc" id="L83" title="All 4 branches missed.">        if (!note.owner.id.equals(userId) &amp;&amp; !permissionService.hasWritePermission(noteId, userId)) {</span>
+<span class="nc" id="L84">            throw new UnauthorizedException(&quot;You don't have permission to resolve conflicts on this note&quot;);</span>
+        }
+
+<span class="nc bnc" id="L87" title="All 4 branches missed.">        switch (resolution.toUpperCase()) {</span>
+            case &quot;ACCEPT_CURRENT&quot;:
+                // Mantieni la versione corrente, non fare nulla
+<span class="nc" id="L90">                break;</span>
+
+            case &quot;ACCEPT_NEW&quot;:
+                // Accetta la nuova versione
+<span class="nc bnc" id="L94" title="All 4 branches missed.">                if (resolvedContent == null || resolvedContent.trim().isEmpty()) {</span>
+<span class="nc" id="L95">                    throw new ConflictException(&quot;Resolved content is required&quot;);</span>
+                }
+<span class="nc bnc" id="L97" title="All 2 branches missed.">                if (resolvedContent.length() &gt; 280) {</span>
+<span class="nc" id="L98">                    throw new ConflictException(&quot;Content must be less than 280 characters&quot;);</span>
+                }
+<span class="nc" id="L100">                note.content = resolvedContent.trim();</span>
+<span class="nc" id="L101">                note.lastModifiedBy = userId;</span>
+<span class="nc" id="L102">                noteRepository.persist(note);</span>
+
+                // Salva nuova versione
+<span class="nc" id="L105">                saveVersion(note, userId);</span>
+<span class="nc" id="L106">                break;</span>
+
+            case &quot;MERGE&quot;:
+                // Merge manuale - l'utente fornisce il contenuto merged
+<span class="nc bnc" id="L110" title="All 4 branches missed.">                if (resolvedContent == null || resolvedContent.trim().isEmpty()) {</span>
+<span class="nc" id="L111">                    throw new ConflictException(&quot;Merged content is required&quot;);</span>
+                }
+<span class="nc bnc" id="L113" title="All 2 branches missed.">                if (resolvedContent.length() &gt; 280) {</span>
+<span class="nc" id="L114">                    throw new ConflictException(&quot;Content must be less than 280 characters&quot;);</span>
+                }
+<span class="nc" id="L116">                note.content = resolvedContent.trim();</span>
+<span class="nc" id="L117">                note.lastModifiedBy = userId;</span>
+<span class="nc" id="L118">                noteRepository.persist(note);</span>
+
+                // Salva nuova versione
+<span class="nc" id="L121">                saveVersion(note, userId);</span>
+<span class="nc" id="L122">                break;</span>
+
+            default:
+<span class="nc" id="L125">                throw new ConflictException(&quot;Invalid resolution type. Use: ACCEPT_CURRENT, ACCEPT_NEW, or MERGE&quot;);</span>
+        }
+
+<span class="nc" id="L128">        return note;</span>
+    }
+
+    /**
+     * Verifica se una nota è stata modificata di recente da un altro utente
+     */
+    public boolean isRecentlyModifiedByOther(Long noteId, Long userId, int minutesThreshold) {
+<span class="nc" id="L135">        Note note = noteRepository.findByIdOptional(noteId)</span>
+<span class="nc" id="L136">                .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;Note&quot;, &quot;id&quot;, noteId));</span>
+
+        // Se l'ultima modifica è dello stesso utente, non c'è conflitto potenziale
+<span class="nc bnc" id="L139" title="All 2 branches missed.">        if (note.lastModifiedBy.equals(userId)) {</span>
+<span class="nc" id="L140">            return false;</span>
+        }
+
+        // Controlla se modificata negli ultimi N minuti
+<span class="nc" id="L144">        LocalDateTime threshold = LocalDateTime.now().minusMinutes(minutesThreshold);</span>
+<span class="nc" id="L145">        return note.updatedAt.isAfter(threshold);</span>
+    }
+
+    /**
+     * Ottiene info su potenziali conflitti attivi
+     */
+    public ConflictDTO checkForActiveConflict(Long noteId, Long userId) {
+        // Controlla se la nota è stata modificata negli ultimi 5 minuti da qualcun altro
+<span class="nc bnc" id="L153" title="All 2 branches missed.">        if (isRecentlyModifiedByOther(noteId, userId, 5)) {</span>
+<span class="nc" id="L154">            Note note = noteRepository.findByIdOptional(noteId)</span>
+<span class="nc" id="L155">                    .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;Note&quot;, &quot;id&quot;, noteId));</span>
+
+<span class="nc" id="L157">            ConflictDTO warning = new ConflictDTO();</span>
+<span class="nc" id="L158">            warning.noteId = noteId;</span>
+<span class="nc" id="L159">            warning.noteTitle = note.title;</span>
+<span class="nc" id="L160">            warning.currentVersion = note.version;</span>
+<span class="nc" id="L161">            warning.currentContent = note.content;</span>
+<span class="nc" id="L162">            warning.lastModifiedAt = note.updatedAt;</span>
+<span class="nc" id="L163">            warning.conflictType = &quot;CONCURRENT_EDIT&quot;;</span>
+
+            try {
+<span class="nc" id="L166">                warning.lastModifiedBy = userService.findById(note.lastModifiedBy).username;</span>
+<span class="nc" id="L167">            } catch (Exception e) {</span>
+<span class="nc" id="L168">                warning.lastModifiedBy = &quot;Unknown&quot;;</span>
+<span class="nc" id="L169">            }</span>
+
+<span class="nc" id="L171">            return warning;</span>
+        }
+
+<span class="nc" id="L174">        return null;</span>
+    }
+
+    private String determineConflictType(Note note, Long attemptedVersion) {
+<span class="nc" id="L178">        long versionDiff = note.version - attemptedVersion;</span>
+
+<span class="nc bnc" id="L180" title="All 2 branches missed.">        if (versionDiff == 1) {</span>
+            // Solo una versione di differenza
+<span class="nc" id="L182">            LocalDateTime fiveMinutesAgo = LocalDateTime.now().minusMinutes(5);</span>
+<span class="nc bnc" id="L183" title="All 2 branches missed.">            if (note.updatedAt.isAfter(fiveMinutesAgo)) {</span>
+<span class="nc" id="L184">                return &quot;CONCURRENT_EDIT&quot;; // Modifica quasi simultanea</span>
+            }
+        }
+
+<span class="nc" id="L188">        return &quot;VERSION_MISMATCH&quot;; // Versioni molto diverse</span>
+    }
+
+    private void saveVersion(Note note, Long userId) {
+<span class="nc" id="L192">        NoteVersion version = new NoteVersion();</span>
+<span class="nc" id="L193">        version.noteId = note.id;</span>
+<span class="nc" id="L194">        version.content = note.content;</span>
+<span class="nc" id="L195">        version.versionNumber = versionRepository.getNextVersionNumber(note.id);</span>
+<span class="nc" id="L196">        version.modifiedBy = userId;</span>
+<span class="nc" id="L197">        versionRepository.persist(version);</span>
+<span class="nc" id="L198">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

@@ -1,0 +1,7 @@
+com\unibo\notes\service\UserServiceTest.class
+com\unibo\notes\service\PermissionServiceTest.class
+com\unibo\notes\controller\AuthControllerTest.class
+com\unibo\notes\service\NoteServiceTest.class
+META-INF\panache-archive.marker
+com\unibo\notes\controller\NoteControllerTest.class
+com\unibo\notes\service\FolderServiceTest.class
