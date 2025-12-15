@@ -1,4 +1,4 @@
-````
+
 # Notes WebApp
 
 **Collaborative web application for note management with automatic versioning and conflict handling.**
