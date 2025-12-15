@@ -230,4 +230,5 @@ Questo progetto è rilasciato sotto licenza MIT - vedi il file [LICENSE](LICENSE
 ---
 
 Progetto per il corso di Ingegneria del Software - A.A. 2024/2025  
-Università di Bologna - Campus di Cesena
+Università di Bologna
+
