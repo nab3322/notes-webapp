@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { AuthService } from '../../core/services/auth.service';  // ←
 
 @Component({
   selector: 'app-register',
@@ -29,7 +30,7 @@ import { Router } from '@angular/router';
               <input matInput type="password" formControlName="password">
             </mat-form-field>
 
-            <button mat-raised-button color="primary" type="submit" 
+            <button mat-raised-button color="primary" type="submit"
                     class="full-width" [disabled]="!registerForm.valid || loading">
               {{loading ? 'Registrazione...' : 'Registrati'}}
             </button>
@@ -60,7 +61,8 @@ export class RegisterComponent {
 
   constructor(
     private fb: FormBuilder,
-    private router: Router
+    private router: Router,
+    private authService: AuthService  // ← AGGIUNTO
   ) {
     this.registerForm = this.fb.group({
       username: ['', [Validators.required, Validators.minLength(3)]],
@@ -71,8 +73,23 @@ export class RegisterComponent {
 
   onSubmit(): void {
     if (this.registerForm.valid) {
-      console.log('Registration:', this.registerForm.value);
-      this.router.navigate(['/auth/login']);
+      this.loading = true;
+      console.log('Invio registrazione al backend...', this.registerForm.value);
+
+      // ← CHIAMA IL BACKEND
+      this.authService.register(this.registerForm.value).subscribe({
+        next: (response) => {
+          console.log('Registrazione completata!', response);
+          alert('Registrazione completata! Ora puoi fare login.');
+          this.loading = false;
+          this.router.navigate(['/auth/login']);
+        },
+        error: (error) => {
+          console.error('Errore registrazione:', error);
+          alert('Errore durante la registrazione: ' + (error.error?.message || 'Errore sconosciuto'));
+          this.loading = false;
+        }
+      });
     }
   }
 }
