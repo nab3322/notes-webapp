@@ -11,6 +11,15 @@ public class PasswordUtil {
     }
 
     public boolean checkPassword(String plainPassword, String hashedPassword) {
-        return BCrypt.verifyer().verify(plainPassword.toCharArray(), hashedPassword).verified;
+        if (plainPassword == null || hashedPassword == null) {
+            return false;
+        }
+        try {
+            BCrypt.Result result = BCrypt.verifyer().verify(plainPassword.toCharArray(), hashedPassword);
+            return result.verified;
+        } catch (Exception e) {
+            System.err.println("BCrypt verification failed: " + e.getMessage());
+            return false;
+        }
     }
 }
