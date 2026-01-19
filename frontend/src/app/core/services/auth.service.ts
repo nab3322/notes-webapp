@@ -9,7 +9,7 @@ import { User, AuthResponse, LoginRequest, RegisterRequest, UserRole } from '../
   providedIn: 'root'
 })
 export class AuthService {
-  private readonly API_URL = 'http://localhost:3000/api'; // Cambia con il tuo endpoint
+    private readonly API_URL = 'http://localhost:8080/api';
   private readonly TOKEN_KEY = 'auth_token';
   private readonly REFRESH_TOKEN_KEY = 'refresh_token';
   private readonly USER_KEY = 'current_user';
@@ -123,11 +123,11 @@ export class AuthService {
   hasAnyRole(roles: (UserRole | string)[]): boolean {
     const user = this.getCurrentUser();
     if (!user || !user.role) return false;
-    
+
     // Converti tutti i ruoli in stringhe per il confronto
     const roleStrings = roles.map(role => role.toString());
     const userRoleString = user.role.toString();
-    
+
     return roleStrings.includes(userRoleString);
   }
 
@@ -168,12 +168,12 @@ export class AuthService {
    */
   refreshToken(): Observable<AuthResponse> {
     const refreshToken = this.getRefreshToken();
-    
+
     if (!refreshToken) {
       this.clearAuthData();
       return throwError(() => new Error('No refresh token available'));
     }
-    
+
     return this.http.post<AuthResponse>(`${this.API_URL}/auth/refresh`, { refreshToken })
       .pipe(
         tap(response => {
@@ -232,7 +232,7 @@ export class AuthService {
     localStorage.setItem(this.TOKEN_KEY, authResponse.token);
     localStorage.setItem(this.USER_KEY, JSON.stringify(authResponse.user));
     localStorage.setItem(this.REFRESH_TOKEN_KEY, authResponse.refreshToken);
-    
+
     this.currentUserSubject.next(authResponse.user);
     this.isAuthenticatedSubject.next(true);
   }
@@ -244,10 +244,10 @@ export class AuthService {
     localStorage.removeItem(this.TOKEN_KEY);
     localStorage.removeItem(this.USER_KEY);
     localStorage.removeItem(this.REFRESH_TOKEN_KEY);
-    
+
     this.currentUserSubject.next(null);
     this.isAuthenticatedSubject.next(false);
-    
+
     this.router.navigate(['/login']);
   }
 }
